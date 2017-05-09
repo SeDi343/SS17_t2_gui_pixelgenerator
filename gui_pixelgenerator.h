@@ -56,34 +56,34 @@
 
 #define ITALIC        "\033[3m"              /* Italic Mode */
 
-#define DEBUG 0
+#define DEBUG 1
 #define GTK_OLD 1
 #define GTK_NEW !GTK_OLD
 
 #define HEIGHT 600
 #define WIDTH 800
 
+#define STRINGLENGTH 500
+
 
 struct picture_pointer
 {
-	unsigned int r;
-	unsigned int g;
-	unsigned int b;
+	int r;
+	int g;
+	int b;
 };
 
 struct my_widgets
 {
-	
-/* ---- WIDGETS FOR MANDELBROT SET ---- */
-	
-	GtkWidget *input_iterations;
-	GtkWidget *input_offset_x;
-	GtkWidget *input_offset_y;
-	GtkWidget *input_zoom;
-	
-/* ---- WIDGETS FOR FILENAME FOR SAVE FUNCTION ---- */
-	
-	GtkWidget *input_filename;
+	GtkWidget *window; /* main window */
+	GtkWidget *image; /* mandelbrot image */
+	GtkWidget *input_iterations; /* input iteratoins */
+	GtkWidget *input_offset_x; /* input offset x */
+	GtkWidget *input_offset_y; /* input offset y */
+	GtkWidget *input_zoom; /* input zoomfactor */
+	GtkWidget *box_1; /* mandelbrot picture */
+	GtkWidget *input_filename; /* saveimage filename */
+	gint calculation; /* value if calculation was present or not */
 };
 
 typedef struct picture_pointer PICTURE;

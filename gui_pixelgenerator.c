@@ -11,12 +11,224 @@
  *          Rev.: 04, 09.05.2017 - Changed boxes scales, due to bug with
  *                                 separators
  *          Rev.: 05, 09.05.2017 - Moved save picture button into headerbar
+ *          Rev.: 06, 09.05.2017 - Coded calculation function -> ppm pictures are
+ *                                 now created stored into a hidden file (.out.ppm)
+ *                                 and opened into box_1, also after recalculation
  *
  * \information
  *
  */
 
 #include "gui_pixelgenerator.h"
+
+int check_number(char *number)
+{
+	char * pch;
+/*	int i;*/
+	
+	pch = strchr(number, '.');
+	if (pch != NULL)
+	{
+		
+		return 1;
+	}
+	
+/*	for (i = 0; i < strnlen(number, STRINGLENGTH); i++)*/
+/*	{*/
+/*		if (isdigit(number[i]) == 0)*/
+/*		{*/
+/*			printf(BOLD"\nERROR: Parameter is not a number.\n"RESET);*/
+/*			return 1;*/
+/*		}*/
+/*	}*/
+	
+	return 0;
+}
+
+/*------------------------------------------------------------------*/
+/* C A L C U L A T E   F U N C T I O N                              */
+/*------------------------------------------------------------------*/
+static void calculation (GtkWidget *widget, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	gchar *buffer1; /* iterations */
+	gchar *buffer2; /* offset x */
+	gchar *buffer3; /* offset y */
+	gchar *buffer4; /* zoom */
+	
+	gdouble iterations;
+	gdouble offset_x;
+	gdouble offset_y;
+	gdouble zoom;
+	gdouble color = 256;
+	gdouble width = WIDTH;
+	gdouble height = HEIGHT;
+	
+	gint x, y;
+	gdouble pr, pi;
+	gdouble newRe, oldRe, newIm, oldIm;
+	
+	gdouble z;
+	
+	gint i, k;
+	gint error = 0;
+	gchar *pEnd;
+	
+	PICTURE *pixel_pointer = NULL;
+	FILE *pFout = NULL;
+	
+/* ---- read input ---- */
+	
+	buffer1 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_iterations));
+	if (check_number(buffer1) == 1)
+		error++;
+	
+	buffer2 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_offset_x));
+	if (check_number(buffer2) == 1)
+		error++;
+	
+	buffer3 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_offset_y));
+	if (check_number(buffer3) ==  1)
+		error++;
+	
+	buffer4 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_zoom));
+	if (check_number(buffer4) == 1)
+		error++;
+	
+	if (error != 0)
+	{
+		printf(BOLD"ERROR: input: %d input(s) are wrong"RESET, error);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- fill variables from buffer ---- */
+	
+	iterations = strtod(buffer1, &pEnd);
+	offset_x = strtod(buffer2, &pEnd);
+	offset_y = strtod(buffer3, &pEnd);
+	zoom = strtod(buffer4, &pEnd);
+	
+#if DEBUG
+	printf(RED"iterations %lf\n", iterations);
+	printf("offset_x %lf\n", offset_x);
+	printf("offset_y %lf\n", offset_y);
+	printf("zoom %lf\n", zoom);
+	printf("height %lf\n", height);
+	printf("width %lf\n"RESET, width);
+#endif
+	
+/* ---- allocate memory for pixels ---- */
+	
+	pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
+	if (pixel_pointer == NULL)
+	{
+		perror(BOLD"ERROR: malloc: Can't allocate pixel memory"RESET);
+		free(pixel_pointer);
+		exit(EXIT_FAILURE);
+	}
+	
+/* ---- generate mandelbrot set with current settings ---- */
+	
+	k = 0;
+	
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			pr = (width/height) * (x - width / 2) / (0.5 * (1/zoom) * width) + offset_x;
+			pi = (y - height / 2) / (0.5 * (1/zoom) * height) + offset_y;
+			
+			newRe = newIm = oldRe = oldIm = 0;
+			
+			for (i = 0; i < iterations; i++)
+			{
+				oldRe = newRe;
+				oldIm = newIm;
+				
+				newRe = oldRe * oldRe - oldIm * oldIm + pr;
+				newIm = 2 * oldRe * oldIm + pi;
+				
+				if ((newRe * newRe + newIm * newIm) > 4)
+				{
+					break;
+				}
+			}
+			
+			if (i == iterations)
+			{
+				(pixel_pointer+k)->r = 0;
+				(pixel_pointer+k)->g = 0;
+				(pixel_pointer+k)->b = 0;
+			}
+			else
+			{
+				z = sqrt(newRe * newRe + newIm * newIm);
+				
+				(pixel_pointer+k)->r = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(pixel_pointer+k)->g = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(pixel_pointer+k)->b = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				
+				if ((pixel_pointer+k)->r < 0)
+					(pixel_pointer+k)->r = 0;
+				
+				if ((pixel_pointer+k)->g < 0)
+					(pixel_pointer+k)->g = 0;
+				
+				if ((pixel_pointer+k)->b < 0)
+					(pixel_pointer+k)->b = 0;
+				
+				if ((pixel_pointer+k)->r > 255)
+					(pixel_pointer+k)->r = 255;
+				
+				if ((pixel_pointer+k)->g > 255)
+					(pixel_pointer+k)->g = 255;
+				
+				if ((pixel_pointer+k)->b > 255)
+					(pixel_pointer+k)->b = 255;
+			}
+			
+			k++;
+		}
+	}
+	
+/* ---- writing temp file ---- */
+	
+	pFout = fopen(".out.ppm", "wb");
+	if (pFout == NULL)
+	{
+		perror(BOLD"ERROR: fopen: Can't open output file"RESET);
+		free(pixel_pointer);
+		exit(EXIT_FAILURE);
+	}
+	
+	fprintf(pFout, "P3\n");
+	fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
+	fprintf(pFout, "255\n");
+	
+	for (i = 0; i < height*width; i++)
+	{
+		fprintf(pFout, "%u %u %u\n",
+				(pixel_pointer+i)->r, (pixel_pointer+i)->g, (pixel_pointer+i)->b);
+	}
+	
+	error = fclose(pFout);
+	if (error == EOF)
+	{
+		perror(BOLD"ERROR: fclose: Can't close file"RESET);
+		free(pixel_pointer);
+		fclose(pFout); /* try it again, maybe something went wrong */
+		exit(EXIT_FAILURE);
+	}
+	
+	gtk_widget_destroy(local_data->image);
+	local_data->image = gtk_image_new_from_file(".out.ppm");
+	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, TRUE, FALSE, 0);
+	
+/* ---- show window ---- */
+	
+	gtk_widget_show_all(local_data->window);
+}
 
 /*------------------------------------------------------------------*/
 /* A P P L Y C S S   F U N C T I O N                                */
@@ -38,21 +250,19 @@ static void apply_css (GtkWidget *widget, GtkStyleProvider *provider)
 /*------------------------------------------------------------------*/
 static void activate (GtkApplication *app, gpointer data)
 {
-	GtkWidget *window;
-	GtkWidget *grid;
-	GtkWidget *name_iterations;
-	GtkWidget *name_offset_x;
-	GtkWidget *name_offset_y;
-	GtkWidget *name_zoom;
-	GtkWidget *name_color;
-	GtkWidget *clr_button, *generate_button;
-	GtkWidget *save_button;
-	GtkWidget *headerbar;
-	GtkWidget *image;
-	GtkWidget *box_1; /* mandelbrot picture */
+	GtkWidget *grid; /* grid for main window */
+	GtkWidget *grid_settings; /* grid for box_3 */
+	GtkWidget *name_iterations; /* iterations title */
+	GtkWidget *name_offset_x; /* offset x title */
+	GtkWidget *name_offset_y; /* offset y title */
+	GtkWidget *name_zoom; /* zoom title */
+	GtkWidget *name_color; /* color title */
+	GtkWidget *clr_button, *generate_button; /* ok and generate buttons */
+	GtkWidget *save_button; /* save button */
+	GtkWidget *headerbar; /* headerbar */
 	GtkWidget *box_2; /* separator 1 */
 	GtkWidget *box_3; /* buttons */
-	GtkWidget *sep_image;
+	GtkWidget *sep_image; /* separator between image and settings */
 	GtkStyleContext *context;
 #if GTK_NEW
 	GtkStyleProvider *provider;
@@ -69,29 +279,29 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- create the window and associate an icon ---- */
 	
-	window = gtk_application_window_new(app);
+	local_data->window = gtk_application_window_new(app);
 	
-	gtk_window_set_resizable(GTK_WINDOW(window), FALSE);
-	//gtk_window_set_default_size(GTK_WINDOW(window), 1280, 720);
+	gtk_window_set_resizable(GTK_WINDOW(local_data->window), FALSE);
+	gtk_window_set_default_size(GTK_WINDOW(local_data->window), 1280, 720);
 	gtk_window_set_default_icon_from_file("icon.jpg", NULL);
 	
-	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
+	gtk_window_set_position(GTK_WINDOW(local_data->window), GTK_WIN_POS_CENTER);
 	
 /* ---- create a grid to be used as layout container ---- */
 	
 	grid = gtk_grid_new();
 	
 	gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
-	gtk_container_add(GTK_CONTAINER(window), grid);
-	gtk_container_set_border_width(GTK_CONTAINER(window), 5);
+	gtk_container_add(GTK_CONTAINER(local_data->window), grid);
+	gtk_container_set_border_width(GTK_CONTAINER(local_data->window), 5);
 	
 /* ---- box in grid for mandelbrot set ---- */
 	
-	box_1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-	gtk_grid_attach(GTK_GRID(grid), box_1, 0, 0, 1, 1);
+	local_data->box_1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), local_data->box_1, 0, 0, 1, 1);
 	
-	image = gtk_image_new_from_file(".out.ppm");
-	gtk_box_pack_start(GTK_BOX(box_1), image, FALSE, FALSE, 0);
+	local_data->image = gtk_image_new_from_file(".out.ppm");
+	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, FALSE, FALSE, 0);
 	
 /* ---- box for image separator ---- */
 	
@@ -108,17 +318,23 @@ static void activate (GtkApplication *app, gpointer data)
 	box_3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_grid_attach(GTK_GRID(grid), box_3, 2, 0, 1, 15);
 	
-	name_iterations = gtk_label_new("Iterations");
-	name_offset_x = gtk_label_new("Offset X");
-	name_offset_y = gtk_label_new("Offset Y");
-	name_zoom = gtk_label_new("Zoomfactor");
-	name_color = gtk_label_new("Colortemplate");
+	grid_settings = gtk_grid_new();
 	
-	gtk_widget_set_halign(name_iterations, GTK_ALIGN_CENTER);
-	gtk_widget_set_halign(name_offset_x, GTK_ALIGN_CENTER);
-	gtk_widget_set_halign(name_offset_y, GTK_ALIGN_CENTER);
-	gtk_widget_set_halign(name_zoom, GTK_ALIGN_CENTER);
-	gtk_widget_set_halign(name_color, GTK_ALIGN_CENTER);
+	gtk_grid_set_column_homogeneous(GTK_GRID(grid_settings), FALSE);
+	gtk_container_add(GTK_CONTAINER(box_3), grid_settings);
+	gtk_container_set_border_width(GTK_CONTAINER(box_3), 0);
+	
+	name_iterations = gtk_label_new("Iterations:");
+	name_offset_x = gtk_label_new("Offset X:");
+	name_offset_y = gtk_label_new("Offset Y:");
+	name_zoom = gtk_label_new("Zoomfactor:");
+	name_color = gtk_label_new("Colortemplate:");
+	
+	gtk_widget_set_halign(name_iterations, GTK_ALIGN_START);
+	gtk_widget_set_halign(name_offset_x, GTK_ALIGN_START);
+	gtk_widget_set_halign(name_offset_y, GTK_ALIGN_START);
+	gtk_widget_set_halign(name_zoom, GTK_ALIGN_START);
+	gtk_widget_set_halign(name_color, GTK_ALIGN_START);
 	
 	gtk_widget_set_name(name_iterations, "style_output");
 	gtk_widget_set_name(name_offset_x, "style_output");
@@ -132,11 +348,11 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_widget_set_size_request(name_zoom, 50, 40);
 	gtk_widget_set_size_request(name_color, 50, 40);
 	
-	gtk_grid_attach(GTK_GRID(grid), name_iterations, 2, 1, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), name_offset_x, 2, 4, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), name_offset_y, 2, 7, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), name_zoom, 2, 10, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), name_color, 2, 12, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), name_iterations, 0, 1, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), name_offset_x, 0, 4, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), name_offset_y, 0, 7, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), name_zoom, 0, 10, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), name_color, 0, 12, 1, 1);
 	
 /* ---- text entry with placeholder text ---- */
 	
@@ -145,19 +361,24 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->input_offset_y = gtk_entry_new();
 	local_data->input_zoom = gtk_entry_new();
 	
-	gtk_grid_attach(GTK_GRID(grid), local_data->input_iterations, 2, 2, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), local_data->input_offset_x, 2, 5, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), local_data->input_offset_y, 2, 8, 1, 1);
-	gtk_grid_attach(GTK_GRID(grid), local_data->input_zoom, 2, 11, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), local_data->input_iterations, 0, 2, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), local_data->input_offset_x, 0, 5, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), local_data->input_offset_y, 0, 8, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid_settings), local_data->input_zoom, 0, 11, 1, 1);
 	
-	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_iterations), "e.g. 1000");
-	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_x), "e.g. -0.5");
-	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_y), "e.g. -0.005");
-	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_zoom), "e.g. -0.99995");
+/*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_iterations), "e.g. 1000");*/
+/*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_x), "e.g. -0,5");*/
+/*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_y), "e.g. 0");*/
+/*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_zoom), "e.g. 1");*/
+	
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_iterations), "100");
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_x), "-0,5");
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_y), "0");
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_zoom), "1");
 	
 /* ---- connect a signal when ENTER is hit within the entry box ---- */
 	
-	//g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(calculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(calculation), (gpointer)local_data);
 	
 /* ---- create a headerbar ---- */
 	
@@ -169,7 +390,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(headerbar), "GUI Task el16b032");
 	
 	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
-	gtk_window_set_titlebar(GTK_WINDOW(window), headerbar);
+	gtk_window_set_titlebar(GTK_WINDOW(local_data->window), headerbar);
 	
 /* ---- put a clear button to the left side of the header bar ---- */
 	
@@ -197,7 +418,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- connect a signal when the GENERATE button is clicked ---- */
 	
-	//g_signal_connect(generate_button, "clicked", G_CALLBACK(calculation), (gpointer)local_data);
+	g_signal_connect(generate_button, "clicked", G_CALLBACK(calculation), (gpointer)local_data);
 	
 /* ---- put save button to the right side of the header bar ---- */
 	
@@ -218,7 +439,7 @@ static void activate (GtkApplication *app, gpointer data)
 #if GTK_NEW
 	provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
 	gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider), "/css_greeter/css_style.css");
-	apply_css(window, provider);
+	apply_css(local_data->window, provider);
 #endif
 	
 #if GTK_OLD
@@ -242,7 +463,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- show window ---- */
 	
-	gtk_widget_show_all(window);
+	gtk_widget_show_all(local_data->window);
 	
 }
 
