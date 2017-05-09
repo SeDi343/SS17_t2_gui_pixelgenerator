@@ -21,6 +21,7 @@
  *          Rev.: 09, 09.05.2017 - Moved struct pointer into the my_widgets struct
  *                                 now using a struct pointer pointing on
  *                                 a struct pointer
+ *          Rev.: 10, 09.05.2017 - Removed separator between image and settings
  *
  * \information
  *
