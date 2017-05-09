@@ -15,6 +15,12 @@
  *                                 now created stored into a hidden file (.out.ppm)
  *                                 and opened into box_1, also after recalculation
  *          Rev.: 07, 09.05.2017 - Moved check_number function into a new c file
+ *          Rev.: 08, 09.05.2017 - Instead of using
+ *                                 gtk_widget_show_all(GtkWidget *widget); window
+ *                                 gtk_widget_show (GtkWidget *widget); image
+ *          Rev.: 09, 09.05.2017 - Moved struct pointer into the my_widgets struct
+ *                                 now using a struct pointer pointing on
+ *                                 a struct pointer
  *
  * \information
  *
@@ -52,7 +58,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gint error = 0;
 	gchar *pEnd;
 	
-	PICTURE *pixel_pointer = NULL;
+	//PICTURE *pixel_pointer = NULL;
 	FILE *pFout = NULL;
 	
 /* ---- read input ---- */
@@ -97,11 +103,11 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 /* ---- allocate memory for pixels ---- */
 	
-	pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
-	if (pixel_pointer == NULL)
+	local_data->pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
+	if (local_data->pixel_pointer == NULL)
 	{
 		perror(BOLD"ERROR: malloc: Can't allocate pixel memory\n"RESET);
-		free(pixel_pointer);
+		free(local_data->pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -134,35 +140,35 @@ static void calculation (GtkWidget *widget, gpointer data)
 			
 			if (i == iterations)
 			{
-				(pixel_pointer+k)->r = 0;
-				(pixel_pointer+k)->g = 0;
-				(pixel_pointer+k)->b = 0;
+				(local_data->pixel_pointer+k)->r = 0;
+				(local_data->pixel_pointer+k)->g = 0;
+				(local_data->pixel_pointer+k)->b = 0;
 			}
 			else
 			{
 				z = sqrt(newRe * newRe + newIm * newIm);
 				
-				(pixel_pointer+k)->r = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				(pixel_pointer+k)->g = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				(pixel_pointer+k)->b = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(local_data->pixel_pointer+k)->r = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(local_data->pixel_pointer+k)->g = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(local_data->pixel_pointer+k)->b = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
 				
-				if ((pixel_pointer+k)->r < 0)
-					(pixel_pointer+k)->r = 0;
+				if ((local_data->pixel_pointer+k)->r < 0)
+					(local_data->pixel_pointer+k)->r = 0;
 				
-				if ((pixel_pointer+k)->g < 0)
-					(pixel_pointer+k)->g = 0;
+				if ((local_data->pixel_pointer+k)->g < 0)
+					(local_data->pixel_pointer+k)->g = 0;
 				
-				if ((pixel_pointer+k)->b < 0)
-					(pixel_pointer+k)->b = 0;
+				if ((local_data->pixel_pointer+k)->b < 0)
+					(local_data->pixel_pointer+k)->b = 0;
 				
-				if ((pixel_pointer+k)->r > 255)
-					(pixel_pointer+k)->r = 255;
+				if ((local_data->pixel_pointer+k)->r > 255)
+					(local_data->pixel_pointer+k)->r = 255;
 				
-				if ((pixel_pointer+k)->g > 255)
-					(pixel_pointer+k)->g = 255;
+				if ((local_data->pixel_pointer+k)->g > 255)
+					(local_data->pixel_pointer+k)->g = 255;
 				
-				if ((pixel_pointer+k)->b > 255)
-					(pixel_pointer+k)->b = 255;
+				if ((local_data->pixel_pointer+k)->b > 255)
+					(local_data->pixel_pointer+k)->b = 255;
 			}
 			
 			k++;
@@ -175,7 +181,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	if (pFout == NULL)
 	{
 		perror(BOLD"ERROR: fopen: Can't open output file\n"RESET);
-		free(pixel_pointer);
+		free(local_data->pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -186,14 +192,14 @@ static void calculation (GtkWidget *widget, gpointer data)
 	for (i = 0; i < height*width; i++)
 	{
 		fprintf(pFout, "%u %u %u\n",
-				(pixel_pointer+i)->r, (pixel_pointer+i)->g, (pixel_pointer+i)->b);
+				(local_data->pixel_pointer+i)->r, (local_data->pixel_pointer+i)->g, (local_data->pixel_pointer+i)->b);
 	}
 	
 	error = fclose(pFout);
 	if (error == EOF)
 	{
 		perror(BOLD"ERROR: fclose: Can't close file\n"RESET);
-		free(pixel_pointer);
+		free(local_data->pixel_pointer);
 		fclose(pFout); /* try it again, maybe something went wrong */
 		exit(EXIT_FAILURE);
 	}
@@ -202,9 +208,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 	local_data->image = gtk_image_new_from_file(".out.ppm");
 	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, TRUE, FALSE, 0);
 	
-/* ---- show window ---- */
+/* ---- show image widget ---- */
 	
-	gtk_widget_show_all(local_data->window);
+	//gtk_widget_show_all(local_data->window);
+	gtk_widget_show(local_data->image);
 }
 
 /*------------------------------------------------------------------*/
