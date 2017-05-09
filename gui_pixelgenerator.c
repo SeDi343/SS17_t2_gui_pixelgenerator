@@ -244,9 +244,7 @@ static void activate (GtkApplication *app, gpointer data)
 	GtkWidget *clr_button, *generate_button; /* ok and generate buttons */
 	GtkWidget *save_button; /* save button */
 	GtkWidget *headerbar; /* headerbar */
-	GtkWidget *box_2; /* separator 1 */
-	GtkWidget *box_3; /* buttons */
-	GtkWidget *sep_image; /* separator between image and settings */
+	GtkWidget *box_2; /* buttons */
 	GtkStyleContext *context;
 #if GTK_NEW
 	GtkStyleProvider *provider;
@@ -287,26 +285,16 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->image = gtk_image_new_from_file(".out.ppm");
 	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, FALSE, FALSE, 0);
 	
-/* ---- box for image separator ---- */
-	
-	box_2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_grid_attach(GTK_GRID(grid), box_2, 1, 0, 1, 16);
-	
-/* ---- add a seperator ---- */
-	
-	sep_image = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
-	gtk_box_pack_start(GTK_BOX(box_2), sep_image, FALSE, TRUE, 5);
-	
 /* ---- box in grid for buttons ---- */
 	
-	box_3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_grid_attach(GTK_GRID(grid), box_3, 2, 0, 1, 15);
+	box_2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), box_2, 2, 0, 1, 15);
 	
 	grid_settings = gtk_grid_new();
 	
 	gtk_grid_set_column_homogeneous(GTK_GRID(grid_settings), FALSE);
-	gtk_container_add(GTK_CONTAINER(box_3), grid_settings);
-	gtk_container_set_border_width(GTK_CONTAINER(box_3), 0);
+	gtk_container_add(GTK_CONTAINER(box_2), grid_settings);
+	gtk_container_set_border_width(GTK_CONTAINER(box_2), 5);
 	
 	name_iterations = gtk_label_new("Iterations:");
 	name_offset_x = gtk_label_new("Offset X:");
@@ -363,6 +351,7 @@ static void activate (GtkApplication *app, gpointer data)
 /* ---- connect a signal when ENTER is hit within the entry box ---- */
 	
 	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(calculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_iterations, "activate", G_CALLBACK(calculation), (gpointer)local_data);
 	
 /* ---- create a headerbar ---- */
 	
@@ -371,7 +360,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_widget_show(headerbar);
 	
 	gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), "GUI Mandelbrot Set Generator");
-	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(headerbar), "GUI Task el16b032");
+	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(headerbar), "GUI Task EL16B032");
 	
 	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
 	gtk_window_set_titlebar(GTK_WINDOW(local_data->window), headerbar);
