@@ -57,6 +57,8 @@
 #define ITALIC        "\033[3m"              /* Italic Mode */
 
 #define DEBUG 0
+#define GTK_OLD 1
+#define GTK_NEW !GTK_OLD
 
 #define HEIGHT 600
 #define WIDTH 800
@@ -67,7 +69,7 @@ struct picture_pointer
 	unsigned int r;
 	unsigned int g;
 	unsigned int b;
-}
+};
 
 struct my_widgets
 {
@@ -82,6 +84,8 @@ struct my_widgets
 /* ---- WIDGETS FOR FILENAME FOR SAVE FUNCTION ---- */
 	
 	GtkWidget *input_filename;
-}
+};
 
 typedef struct picture_pointer PICTURE;
+
+#endif /*_pixelheader_*/
