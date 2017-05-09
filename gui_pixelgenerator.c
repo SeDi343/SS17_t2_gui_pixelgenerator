@@ -5,6 +5,9 @@
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
  * \version Rev.: 01, 09.05.2017 - Creating the c file
+ *          Rev.: 02, 09.05.2017 - Added to github
+ *          Rev.: 03, 09.05.2017 - Added activate function with different boxes
+ *                                 and inputs for offset & zoom of mandelbrot set
  *
  * \information
  *
@@ -27,8 +30,13 @@ static void actiate (GtkApplication *app, gpointer data)
 	GtkWidget *clr_button, *generate_button;
 	GtkWidget *headerbar;
 	GtkWidget *box_1; /* mandelbrot picture */
-	GtkWidget *box_2; /* buttons */
-	GtkWidget *sep;
+	GtkWidget *box_2; /* separator 1 */
+	GtkWidget *box_3; /* buttons */
+	GtkWidget *sep_image;
+	GtkWidget *sep_iterations;
+	GtkWidget *sep_offset_x;
+	GtkWidget *sep_offset_y;
+	GtkWidget *sep_zoom;
 	GtkStyleContext *context;
 	
 /* ---- obtain reference to the widget passed as generic data pointer ---- */
@@ -49,11 +57,74 @@ static void actiate (GtkApplication *app, gpointer data)
 	
 	grid = gtk_grid_new();
 	
-	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+	gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
 	gtk_container_add(GTK_CONTAINER(window), grid);
 	gtk_container_set_border_width(GTK_CONTAINER(window), 5);
 	
-/* ---- box in grid ---- */
+/* ---- box in grid for mandelbrot set ---- */
+	
+	box_1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), box_1, 0, 0, 1, 1);
+	
+/* ---- box for image seperator ---- */
+	
+	box_2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), box_2, 1, 0, 15, 1);
+	
+/* ---- add a seperator ---- */
+	
+	sep_image = gtk_separator_new(GTK_ORIENTATION_VERTICAL);
+	gtk_box_pack_start(GTK_BOX(box_2), sep_image, FALSE, TRUE, 5);
+	
+/* ---- box in grid for buttons ---- */
+	
+	box_3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), box_3, 2, 0, 15, 1);
+	
+	name_iterations = gtk_label_new("Iterations");
+	name_offset_x = gtk_label_new("Offset X");
+	name_offset_y = gtk_label_new("Offset Y");
+	name_zoom = gtk_label_new("Zoomfactor");
+	
+	gtk_widget_set_halign(name_iterations, GTK_ALIGN_END);
+	gtk_widget_set_halign(name_offset_x, GTK_ALIGN_END);
+	gtk_widget_set_halign(name_offset_y, GTK_ALIGN_END);
+	gtk_widget_set_halign(name_zoom, GTK_ALIGN_END);
+	
+	gtk_widget_set_size_request(name_iterations, 50, 40);
+	gtk_widget_set_size_request(name_offset_x, 50, 40);
+	gtk_widget_set_size_request(name_offset_y, 50, 40);
+	gtk_widget_set_size_request(name_zoom, 50, 40);
+	
+	gtk_grid_attach(GTK_GRID(grid), name_iterations, 2, 0, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), name_offset_x, 2, 3, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), name_offset_y, 2, 6, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), name_zoom, 2, 9, 1, 1);
+	
+/* ---- text entry with placeholder text ---- */
+	
+	local_data->input_iterations = gtk_entry_new();
+	local_data->input_offset_x = gtk_entry_new();
+	local_data->input_offset_y = gtk_entry_new();
+	local_data->input_zoom = gtk_entry_new();
+	
+	gtk_grid_attach(GTK_GRID(grid), local_data->input_iterations, 2, 1, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), local_data->input_offset_x, 2, 4, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), local_data->input_offset_y, 2, 7, 1, 1);
+	gtk_grid_attach(GTK_GRID(grid), local_data->input_zoom, 2, 10, 1, 1);
+	
+	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_iterations), "e.g. 1000");
+	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_x), "e.g. -0.5");
+	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_y), "e.g. -0.005");
+	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_zoom), "e.g. -0.99995");
+	
+/* ---- separators for each input value ---- */
+	
+	sep_iterations = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	sep_offset_x = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	sep_offset_y = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	sep_zoom = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	
 }
 
 /*------------------------------------------------------------------*/

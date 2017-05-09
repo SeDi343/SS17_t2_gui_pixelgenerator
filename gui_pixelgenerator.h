@@ -5,6 +5,7 @@
  * \author Sebastian Dichler <el16b032@technikum-wien.at> <sedi343@gmail.com>
  *
  * \version Rev.: 01, 09.05.2017 - Creating the h file
+ *          Rev.: 02, 09.05.2017 - Added to github
  *
  * \information
  *
