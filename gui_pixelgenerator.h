@@ -88,4 +88,6 @@ struct my_widgets
 
 typedef struct picture_pointer PICTURE;
 
+int check_number(char *number);
+
 #endif /*_pixelheader_*/

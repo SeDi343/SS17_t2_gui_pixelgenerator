@@ -14,36 +14,13 @@
  *          Rev.: 06, 09.05.2017 - Coded calculation function -> ppm pictures are
  *                                 now created stored into a hidden file (.out.ppm)
  *                                 and opened into box_1, also after recalculation
+ *          Rev.: 07, 09.05.2017 - Moved check_number function into a new c file
  *
  * \information
  *
  */
 
 #include "gui_pixelgenerator.h"
-
-int check_number(char *number)
-{
-	char * pch;
-/*	int i;*/
-	
-	pch = strchr(number, '.');
-	if (pch != NULL)
-	{
-		
-		return 1;
-	}
-	
-/*	for (i = 0; i < strnlen(number, STRINGLENGTH); i++)*/
-/*	{*/
-/*		if (isdigit(number[i]) == 0)*/
-/*		{*/
-/*			printf(BOLD"\nERROR: Parameter is not a number.\n"RESET);*/
-/*			return 1;*/
-/*		}*/
-/*	}*/
-	
-	return 0;
-}
 
 /*------------------------------------------------------------------*/
 /* C A L C U L A T E   F U N C T I O N                              */
@@ -82,23 +59,23 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	buffer1 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_iterations));
 	if (check_number(buffer1) == 1)
-		error++;
+		error = 1;
 	
 	buffer2 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_offset_x));
 	if (check_number(buffer2) == 1)
-		error++;
+		error = 2;
 	
 	buffer3 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_offset_y));
 	if (check_number(buffer3) ==  1)
-		error++;
+		error = 3;
 	
 	buffer4 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_zoom));
 	if (check_number(buffer4) == 1)
-		error++;
+		error = 4;
 	
 	if (error != 0)
 	{
-		printf(BOLD"ERROR: input: %d input(s) are wrong"RESET, error);
+		printf(BOLD"ERROR: input: %d input is wrong\n"RESET, error);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -123,7 +100,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
 	if (pixel_pointer == NULL)
 	{
-		perror(BOLD"ERROR: malloc: Can't allocate pixel memory"RESET);
+		perror(BOLD"ERROR: malloc: Can't allocate pixel memory\n"RESET);
 		free(pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
@@ -197,7 +174,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	pFout = fopen(".out.ppm", "wb");
 	if (pFout == NULL)
 	{
-		perror(BOLD"ERROR: fopen: Can't open output file"RESET);
+		perror(BOLD"ERROR: fopen: Can't open output file\n"RESET);
 		free(pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
@@ -215,7 +192,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	error = fclose(pFout);
 	if (error == EOF)
 	{
-		perror(BOLD"ERROR: fclose: Can't close file"RESET);
+		perror(BOLD"ERROR: fclose: Can't close file\n"RESET);
 		free(pixel_pointer);
 		fclose(pFout); /* try it again, maybe something went wrong */
 		exit(EXIT_FAILURE);

@@ -1,7 +1,7 @@
 #-------------------------------------------------------------
 
 TARGET   = pixelgenerator
-SOURCES  = gui_pixelgenerator.c
+SOURCES  = gui_pixelgenerator.c gui_pixelgenerator_functions.c
 RESOURCE = style_res
 
 #-------------------------------------------------------------
