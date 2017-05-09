@@ -1,0 +1,17 @@
+window {
+	background-color: #333333;
+}
+
+/* In order to select the label using a name use gtk_widget_set_name() in the
+   code to give it a name. Within the CSS you may reference it using 
+   "#name" as shown below.
+   See https://thegnomejournal.wordpress.com/2011/03/15/styling-gtk-with-css/
+   for further information.
+*/
+#style_output
+{
+	color: #ffffff;
+	font-size: 14px;
+	font-family: "Arial";
+	font-weight: normal;
+}
