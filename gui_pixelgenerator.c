@@ -22,6 +22,8 @@
  *                                 now using a struct pointer pointing on
  *                                 a struct pointer
  *          Rev.: 10, 09.05.2017 - Removed separator between image and settings
+ *          Rev.: 11, 10.05.2017 - Removed a bug with the algorithm & using
+ *                                 terminal for main information
  *
  * \information
  *

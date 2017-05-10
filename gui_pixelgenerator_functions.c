@@ -6,6 +6,7 @@
  *
  * \version Rev.: 01, 09.05.2017 - Creating the c file
  *          Rev.: 02, 09.05.2017 - Added to github
+ *          Rev.: 03, 10.05.2017 - Changed the check_number function
  *
  * \information
  *
