@@ -94,12 +94,12 @@ static void calculation (GtkWidget *widget, gpointer data)
 	zoom = strtod(buffer4, &pEnd);
 	
 #if DEBUG
-	printf(RED"iterations %lf\n", iterations);
-	printf("offset_x %lf\n", offset_x);
-	printf("offset_y %lf\n", offset_y);
-	printf("zoom %lf\n", zoom);
-	printf("height %lf\n", height);
-	printf("width %lf\n"RESET, width);
+	printf(BOLD"iterations"RESET ITALIC" %.0lf "RESET, iterations);
+	printf(BOLD"offset_x"RESET ITALIC" %lf "RESET, offset_x);
+	printf(BOLD"offset_y"RESET ITALIC" %lf "RESET, offset_y);
+	printf(BOLD"zoom"RESET ITALIC" %lf\t"RESET, zoom);
+	printf(BOLD"height"RESET ITALIC" %.0lf "RESET, height);
+	printf(BOLD"width"RESET ITALIC" %.0lf\n"RESET, width);
 #endif
 	
 /* ---- allocate memory for pixels ---- */
@@ -114,6 +114,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 /* ---- generate mandelbrot set with current settings ---- */
 	
+#if DEBUG
+	printf(BOLD"Calculating Mandelbrot Set\t"RESET);
+#endif
+	
 	k = 0;
 	
 	for (y = 0; y < height; y++)
@@ -121,7 +125,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 		for (x = 0; x < width; x++)
 		{
 			pr = (width/height) * (x - width / 2) / (0.5 * (1/zoom) * width) + offset_x;
-			pi = (y - height / 2) / (0.5 * (1/zoom) * height) + offset_y;
+			pi = (y - height / 2) / (0.5 * (1/zoom) * height) - offset_y;
 			
 			newRe = newIm = oldRe = oldIm = 0;
 			
@@ -176,6 +180,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 		}
 	}
 	
+#if DEBUG
+	printf(BOLD"Done generating set\t Writing file\t"RESET);
+#endif
+	
 /* ---- writing temp file ---- */
 	
 	pFout = fopen(".out.ppm", "wb");
@@ -206,6 +214,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 		fclose(pFout); /* try it again, maybe something went wrong */
 		exit(EXIT_FAILURE);
 	}
+	
+#if DEBUG
+	printf(BOLD"Done writing file\n\n"RESET);
+#endif
 	
 	gtk_widget_destroy(local_data->image);
 	local_data->image = gtk_image_new_from_file(".out.ppm");

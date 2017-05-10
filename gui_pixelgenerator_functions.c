@@ -16,20 +16,29 @@
 
 int check_number(char *number)
 {
-	char * pch;
+/*	char * pch;*/
 	int i;
 	
-	pch = strchr(number, '.');
-	if (pch != NULL)
-	{
-		
-		return 1;
-	}
+/*	pch = strchr(number, '.');*/
+/*	if (pch != NULL)*/
+/*	{*/
+/*		*/
+/*		return 1;*/
+/*	}*/
 	
 	if (isdigit(number[0]) == 0 && number[0] != '-')
 	{
 		printf(BOLD"ERROR: Not a number\n"RESET);
 		return 1;
+	}
+	
+	for (i = 1; i < strnlen(number, STRINGLENGTH); i++)
+	{
+		if(number[i] == '.')
+		{
+			number[i] = ',';
+			printf(BOLD"WARNING: Changed (.) to (,)\n"RESET);
+		}
 	}
 	
 	for (i = 1; i < strnlen(number, STRINGLENGTH); i++)
