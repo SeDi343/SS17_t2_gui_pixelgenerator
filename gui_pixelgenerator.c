@@ -24,12 +24,194 @@
  *          Rev.: 10, 09.05.2017 - Removed separator between image and settings
  *          Rev.: 11, 10.05.2017 - Removed a bug with the algorithm & using
  *                                 terminal for main information
+ *          Rev.: 12, 10.05.2017 - Added the clear function
+ *          Rev.: 13, 10.05.2017 - Added a full saveimage function with dialog
+ *                                 window
  *
- * \information
+ * \information Having problems with free() function if no calculation but save
+ *              picture with system(cp) command.
  *
  */
 
 #include "gui_pixelgenerator.h"
+
+/*------------------------------------------------------------------*/
+/* D I A L O G   S A V E   R E S P O N S E   F U N C T I O N        */
+/*------------------------------------------------------------------*/
+static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	gdouble height = HEIGHT;
+	gdouble width = WIDTH;
+	gchar *local_filename;
+	gchar *systemcall;
+	
+	gint i;
+	gint error;
+	
+	FILE *pFout = NULL;
+	
+/* ---- convert widget filename into string ---- */
+	
+	local_filename = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_filename));
+	
+/* ---- check filname extension ---- */
+	
+	if (strncmp(&(local_filename[strlen(local_filename)-4]), ".ppm", 4) != 0)
+	{
+		perror(BOLD"WARNING: extension: extension is not set, or wrong"RESET);
+		sprintf(local_filename, "%s.ppm", local_filename);
+	}
+	
+/* ---- response save with calculation ---- */
+	
+	if (response_id == GTK_RESPONSE_OK && local_data->calculation == 1)
+	{
+		pFout = fopen(local_filename, "wb");
+		if (pFout == NULL)
+		{
+			perror(BOLD"ERROR: fopen: Can't open output file"RESET);
+			g_free(local_data->pixel_pointer);
+			exit(EXIT_FAILURE);
+		}
+		
+		fprintf(pFout, "P3\n");
+		fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
+		fprintf(pFout, "255\n");
+		
+		for (i = 0; i < height*width; i++)
+		{
+			fprintf(pFout, "%u %u %u\n",
+					(local_data->pixel_pointer+i)->r,
+					(local_data->pixel_pointer+i)->g,
+					(local_data->pixel_pointer+i)->b);
+		}
+		
+		error = fclose(pFout);
+		if (error == EOF)
+		{
+			perror(BOLD"ERROR: fclose: Can't close file"RESET);
+			g_free(local_data->pixel_pointer);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+/* ---- response save without calculation ---- */
+	
+	else if (response_id == GTK_RESPONSE_OK && local_data->calculation == 0)
+	{
+		systemcall = g_malloc(sizeof(gchar) * (strnlen(local_filename, sizeof(local_filename)) + 12));
+		error = sprintf(systemcall, "cp .out.ppm %s", local_filename);
+		if (error < 0)
+		{
+			perror(BOLD"ERROR: sprintf: Can't create string"RESET);
+			g_free(systemcall);
+			exit(EXIT_FAILURE);
+			
+		}
+		
+		error = system(systemcall);
+		if (error < 0)
+		{
+			perror(BOLD"ERROR: system: Can't save image with cp command"RESET);
+			g_free(systemcall);
+			exit(EXIT_FAILURE);
+		}
+		
+		g_free(systemcall);
+	}
+	
+	gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+}
+
+/*------------------------------------------------------------------*/
+/* D I A L O G   S A V E   E N T R Y   F U N C T I O N              */
+/*------------------------------------------------------------------*/
+static void dialog_save_entry (GtkWidget *widget, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	dialog_save_response(GTK_DIALOG(local_data->save_dialog), GTK_RESPONSE_OK, local_data);
+}
+
+/*------------------------------------------------------------------*/
+/* D I A L O G   S A V E   I M A G E   F U N C T I O N              */
+/*------------------------------------------------------------------*/
+static void dialog_savebutton (GtkWidget *widget, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	GtkWidget *grid;
+	GtkWidget *label;
+	GtkWidget *save_button;
+	GtkWidget *cancel_button;
+	GtkStyleContext *context;
+	GtkWidget *content_area;
+	
+/* ---- create a new dialog ---- */
+	
+	local_data->save_dialog = gtk_dialog_new_with_buttons("Save as ...",
+												GTK_WINDOW (local_data->window),
+												GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT |
+												GTK_DIALOG_USE_HEADER_BAR,
+												GTK_BUTTONS_NONE,
+												NULL);
+	save_button = gtk_dialog_add_button(GTK_DIALOG(local_data->save_dialog), _ ("_Save"), GTK_RESPONSE_OK);
+	cancel_button = gtk_dialog_add_button(GTK_DIALOG(local_data->save_dialog), _ ("_Cancel"), GTK_RESPONSE_CANCEL);
+	
+/* ---- change buttons style ---- */
+	
+	context = gtk_widget_get_style_context(save_button);
+	gtk_style_context_add_class(context, "text-button");
+	gtk_style_context_add_class(context, "suggested-action");
+	
+	context = gtk_widget_get_style_context(cancel_button);
+	gtk_style_context_add_class(context, "text-button");
+	gtk_style_context_add_class(context, "destructive-action");
+	
+/* ---- change dialog window size ---- */
+	
+	gtk_window_set_default_size(GTK_WINDOW(local_data->save_dialog), 400, 150);
+	
+/* ---- costom dialog ---- */
+	
+	content_area = gtk_dialog_get_content_area(GTK_DIALOG(local_data->save_dialog));
+	
+	grid = gtk_grid_new();
+	gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
+	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
+	gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+	gtk_container_add(GTK_CONTAINER(content_area), grid);
+	gtk_container_set_border_width(GTK_CONTAINER(content_area), 10);
+	
+	label = gtk_label_new("Enter filename and click Save ...");
+	gtk_widget_set_name(label, "style_output");
+	gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
+	
+	local_data->input_filename = gtk_entry_new();
+	gtk_grid_attach(GTK_GRID(grid), local_data->input_filename, 0, 1, 1, 1);
+	
+/* ---- show dialog message ---- */
+	
+	gtk_widget_show_all(local_data->save_dialog);
+	
+	g_signal_connect(GTK_DIALOG(local_data->save_dialog), "response", G_CALLBACK(dialog_save_response), (gpointer)local_data);
+	g_signal_connect(GTK_ENTRY(local_data->input_filename), "activate", G_CALLBACK(dialog_save_entry), (gpointer)local_data);
+}
+
+/*------------------------------------------------------------------*/
+/* C L E A R   F U N C T I O N                                      */
+/*------------------------------------------------------------------*/
+static void clr_clicked (GtkWidget *widget, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_iterations), "100");
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_x), "-0,5");
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_y), "0");
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_zoom), "1");
+}
 
 /*------------------------------------------------------------------*/
 /* C A L C U L A T E   F U N C T I O N                              */
@@ -61,30 +243,41 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gint error = 0;
 	gchar *pEnd;
 	
-	//PICTURE *pixel_pointer = NULL;
 	FILE *pFout = NULL;
 	
 /* ---- read input ---- */
 	
 	buffer1 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_iterations));
 	if (check_number(buffer1) == 1)
+	{
 		error = 1;
+	}
 	
 	buffer2 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_offset_x));
 	if (check_number(buffer2) == 1)
+	{
 		error = 2;
+	}
 	
 	buffer3 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_offset_y));
 	if (check_number(buffer3) ==  1)
+	{
 		error = 3;
+	}
 	
 	buffer4 = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_zoom));
 	if (check_number(buffer4) == 1)
+	{
 		error = 4;
+	}
 	
 	if (error != 0)
 	{
 		printf(BOLD"ERROR: input: %d input is wrong\n"RESET, error);
+		if (local_data->pixel_pointer != NULL)
+		{
+			g_free(local_data->pixel_pointer);
+		}
 		exit(EXIT_FAILURE);
 	}
 	
@@ -106,11 +299,15 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 /* ---- allocate memory for pixels ---- */
 	
-	local_data->pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
+	if (local_data->pixel_pointer == NULL)
+	{
+		local_data->pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
+	}
+	
 	if (local_data->pixel_pointer == NULL)
 	{
 		perror(BOLD"ERROR: malloc: Can't allocate pixel memory\n"RESET);
-		free(local_data->pixel_pointer);
+		g_free(local_data->pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -182,6 +379,8 @@ static void calculation (GtkWidget *widget, gpointer data)
 		}
 	}
 	
+	local_data->calculation = 1;
+	
 #if DEBUG
 	printf(BOLD"Done generating set\t Writing file\t"RESET);
 #endif
@@ -192,7 +391,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	if (pFout == NULL)
 	{
 		perror(BOLD"ERROR: fopen: Can't open output file\n"RESET);
-		free(local_data->pixel_pointer);
+		g_free(local_data->pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -212,8 +411,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	if (error == EOF)
 	{
 		perror(BOLD"ERROR: fclose: Can't close file\n"RESET);
-		free(local_data->pixel_pointer);
-		fclose(pFout); /* try it again, maybe something went wrong */
+		g_free(local_data->pixel_pointer);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -227,7 +425,6 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 /* ---- show image widget ---- */
 	
-	//gtk_widget_show_all(local_data->window);
 	gtk_widget_show(local_data->image);
 }
 
@@ -275,6 +472,10 @@ static void activate (GtkApplication *app, gpointer data)
 /* ---- obtain reference to the widget passed as generic data pointer ---- */
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+/* ---- set the calculation value for save image to 0 ---- */
+	
+	local_data->calculation = 0;
 	
 /* ---- create the window and associate an icon ---- */
 	
@@ -394,7 +595,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- connect a signal when the CLEAR button is clicked ---- */
 	
-	//g_signal_connect(clr_button, "clicked", G_CALLBACK(clr_clicked), (gpointer)local_data);
+	g_signal_connect(clr_button, "clicked", G_CALLBACK(clr_clicked), (gpointer)local_data);
 	
 /* ---- put a okay button to the right side of the header bar ---- */
 	
@@ -422,7 +623,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- connect a signal when the SAVE button is clicked ---- */
 	
-	//g_signal_connect(save_button, "clicked", G_CALLBACK(saveimage), (gpointer)local_data);
+	g_signal_connect(save_button, "clicked", G_CALLBACK(dialog_savebutton), (gpointer)local_data);
 	
 /* ---- add styles ---- */
 	
@@ -481,6 +682,10 @@ int main (int argc, char *argv[])
 	
 /* ---- free the memory for the widgets struct ---- */
 	
+	if (local_data->pixel_pointer != NULL)
+	{
+		g_free(local_data->pixel_pointer);
+	}
 	g_free(local_data);
 	local_data = NULL;
 	

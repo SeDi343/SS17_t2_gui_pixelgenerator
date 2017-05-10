@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
+#include <libintl.h>
 
 /* ---- ANSI FORMAT FOR TERMINAL ---- */
 
@@ -65,6 +66,8 @@
 
 #define STRINGLENGTH 500
 
+#define _(string) gettext (string)
+
 
 struct picture_pointer
 {
@@ -83,6 +86,8 @@ struct my_widgets
 	GtkWidget *input_zoom; /* input zoomfactor */
 	GtkWidget *box_1; /* mandelbrot picture */
 	GtkWidget *input_filename; /* saveimage filename */
+	GtkWidget *save_dialog; /* Dialog for saveimage */
+	GtkWidget *save_label; /* Label for saveimage */
 	gint calculation; /* value if calculation was present or not */
 	struct picture_pointer *pixel_pointer; /* pixel pointer */
 };
