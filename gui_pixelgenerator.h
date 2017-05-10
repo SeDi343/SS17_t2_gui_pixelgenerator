@@ -84,7 +84,7 @@ struct my_widgets
 	GtkWidget *box_1; /* mandelbrot picture */
 	GtkWidget *input_filename; /* saveimage filename */
 	gint calculation; /* value if calculation was present or not */
-	struct picture_pointer *pixel_pointer;
+	struct picture_pointer *pixel_pointer; /* pixel pointer */
 };
 
 typedef struct picture_pointer PICTURE;

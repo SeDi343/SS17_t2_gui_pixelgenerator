@@ -193,7 +193,9 @@ static void calculation (GtkWidget *widget, gpointer data)
 	for (i = 0; i < height*width; i++)
 	{
 		fprintf(pFout, "%u %u %u\n",
-				(local_data->pixel_pointer+i)->r, (local_data->pixel_pointer+i)->g, (local_data->pixel_pointer+i)->b);
+				(local_data->pixel_pointer+i)->r,
+				(local_data->pixel_pointer+i)->g,
+				(local_data->pixel_pointer+i)->b);
 	}
 	
 	error = fclose(pFout);
@@ -265,7 +267,7 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->window = gtk_application_window_new(app);
 	
 	gtk_window_set_resizable(GTK_WINDOW(local_data->window), FALSE);
-	gtk_window_set_default_size(GTK_WINDOW(local_data->window), 1280, 720);
+	//gtk_window_set_default_size(GTK_WINDOW(local_data->window), 1280, 720);
 	gtk_window_set_default_icon_from_file("icon.jpg", NULL);
 	
 	gtk_window_set_position(GTK_WINDOW(local_data->window), GTK_WIN_POS_CENTER);
@@ -339,7 +341,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_grid_attach(GTK_GRID(grid_settings), local_data->input_offset_y, 0, 8, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid_settings), local_data->input_zoom, 0, 11, 1, 1);
 	
-/*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_iterations), "e.g. 1000");*/
+/*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_iterations), "e.g. 100");*/
 /*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_x), "e.g. -0,5");*/
 /*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_offset_y), "e.g. 0");*/
 /*	gtk_entry_set_placeholder_text(GTK_ENTRY(local_data->input_zoom), "e.g. 1");*/
@@ -361,7 +363,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_widget_show(headerbar);
 	
 	gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), "GUI Mandelbrot Set Generator");
-	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(headerbar), "GUI Task EL16B032");
+	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(headerbar), "GUI Task | el16b032");
 	
 	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
 	gtk_window_set_titlebar(GTK_WINDOW(local_data->window), headerbar);
