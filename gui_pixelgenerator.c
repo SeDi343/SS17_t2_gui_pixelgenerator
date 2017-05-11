@@ -30,6 +30,8 @@
  *          Rev.: 14, 11.05.2017 - Removed the bug with saveimage without
  *                                 calculation, somehow we need 13 bytes instead
  *                                 of 12 bytes.
+ *          Rev.: 15, 11.05.2017 - Removed a memory access error canceling the
+ *                                 dialog
  *
  * \information
  *
@@ -54,22 +56,22 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 	
 	FILE *pFout = NULL;
 	
-/* ---- convert widget filename into string ---- */
-	
-	local_filename = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_filename));
-	
-/* ---- check filname extension ---- */
-	
-	if (strncmp(&(local_filename[strlen(local_filename)-4]), ".ppm", 4) != 0)
-	{
-		perror(BOLD"WARNING: extension: extension is not set, or wrong"RESET);
-		sprintf(local_filename, "%s.ppm", local_filename);
-	}
-	
 /* ---- response save with calculation ---- */
 	
 	if (response_id == GTK_RESPONSE_OK && local_data->calculation == 1)
 	{
+		local_filename = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_filename));
+		
+/* ---- check filname extension ---- */
+		
+		if (strncmp(&(local_filename[strlen(local_filename)-4]), ".ppm", 4) != 0)
+		{
+			perror(BOLD"WARNING: extension: extension is not set, or wrong"RESET);
+			sprintf(local_filename, "%s.ppm", local_filename);
+		}
+		
+/* ---- open output file with given filename ---- */
+		
 		pFout = fopen(local_filename, "wb");
 		if (pFout == NULL)
 		{
@@ -85,9 +87,9 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		for (i = 0; i < height*width; i++)
 		{
 			fprintf(pFout, "%u %u %u\n",
-					(local_data->pixel_pointer+i)->r,
-					(local_data->pixel_pointer+i)->g,
-					(local_data->pixel_pointer+i)->b);
+								(local_data->pixel_pointer+i)->r,
+								(local_data->pixel_pointer+i)->g,
+								(local_data->pixel_pointer+i)->b);
 		}
 		
 		error = fclose(pFout);
@@ -105,18 +107,26 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 	
 	else if (response_id == GTK_RESPONSE_OK && local_data->calculation == 0)
 	{
+		local_filename = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_filename));
+		
+/* ---- check filname extension ---- */
+		
+		if (strncmp(&(local_filename[strlen(local_filename)-4]), ".ppm", 4) != 0)
+		{
+			perror(BOLD"WARNING: extension: extension is not set, or wrong"RESET);
+			sprintf(local_filename, "%s.ppm", local_filename);
+		}
+		
+/* ---- create a systemcall for cp command because the only information we have ---- */
+		
 		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13));
 		
 		error = sprintf(systemcall, "cp .out.ppm %s", local_filename);
-		
-		printf("Systemcall %s\n", systemcall);
-		
 		if (error < 0)
 		{
 			perror(BOLD"ERROR: sprintf: Can't create string"RESET);
 			g_free(systemcall);
 			exit(EXIT_FAILURE);
-			
 		}
 		
 		error = system(systemcall);
@@ -136,7 +146,6 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 	{
 		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
 	}
-	
 }
 
 /*------------------------------------------------------------------*/
@@ -166,11 +175,12 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 /* ---- create a new dialog ---- */
 	
 	local_data->save_dialog = gtk_dialog_new_with_buttons("Save as ...",
-												GTK_WINDOW (local_data->window),
-												GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT |
-												GTK_DIALOG_USE_HEADER_BAR,
-												GTK_BUTTONS_NONE,
-												NULL);
+								GTK_WINDOW (local_data->window),
+								GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT |
+								GTK_DIALOG_USE_HEADER_BAR,
+								GTK_BUTTONS_NONE,
+								NULL);
+	
 	save_button = gtk_dialog_add_button(GTK_DIALOG(local_data->save_dialog), _ ("_Save"), GTK_RESPONSE_OK);
 	cancel_button = gtk_dialog_add_button(GTK_DIALOG(local_data->save_dialog), _ ("_Cancel"), GTK_RESPONSE_CANCEL);
 	
@@ -402,9 +412,9 @@ static void calculation (GtkWidget *widget, gpointer data)
 	for (i = 0; i < height*width; i++)
 	{
 		fprintf(pFout, "%u %u %u\n",
-				(local_data->pixel_pointer+i)->r,
-				(local_data->pixel_pointer+i)->g,
-				(local_data->pixel_pointer+i)->b);
+								(local_data->pixel_pointer+i)->r,
+								(local_data->pixel_pointer+i)->g,
+								(local_data->pixel_pointer+i)->b);
 	}
 	
 	error = fclose(pFout);
@@ -639,23 +649,23 @@ static void activate (GtkApplication *app, gpointer data)
 	screen = gdk_display_get_default_screen(display);
 	
 	gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider), "GtkWindow {\n"
-																"   background-color: #333333;\n"
-																"}\n"
-																"#style_output\n"
-																"{\n"
-																"   color: #ffffff;\n"
-																"   font-size: 14px;\n"
-																"   font-family: 'Arial';\n"
-																"   font-weight: normal;\n"
-																"}\n", -1, NULL);
+	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider),
+								"GtkWindow {\n"
+								"   background-color: #333333;\n"
+								"}\n"
+								"#style_output\n"
+								"{\n"
+								"   color: #ffffff;\n"
+								"   font-size: 14px;\n"
+								"   font-family: 'Arial';\n"
+								"   font-weight: normal;\n"
+								"}\n", -1, NULL);
 	g_object_unref(provider);
 #endif
 	
 /* ---- show window ---- */
 	
 	gtk_widget_show_all(local_data->window);
-	
 }
 
 /*------------------------------------------------------------------*/
@@ -672,7 +682,7 @@ int main (int argc, char *argv[])
 	
 /* ---- allocate memory for pixels ---- */
 	
-	local_data->pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
+	local_data->pixel_pointer = (PICTURE *)g_malloc(WIDTH * HEIGHT * sizeof(PICTURE));
 	if (local_data->pixel_pointer == NULL)
 	{
 		perror(BOLD"ERROR: malloc: Can't allocate pixel memory\n"RESET);
