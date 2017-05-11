@@ -32,8 +32,9 @@
  *                                 of 12 bytes.
  *          Rev.: 15, 11.05.2017 - Removed a memory access error canceling the
  *                                 dialog
+ *          Rev.: 16, 11.05.2017 - Added g_free(local_data) to every exit operation
  *
- * \information
+ * \information Create Flow box for colors & statusbar & menu
  *
  */
 
@@ -77,6 +78,7 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		{
 			perror(BOLD"ERROR: fopen: Can't open output file"RESET);
 			g_free(local_data->pixel_pointer);
+			g_free(local_data);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -97,6 +99,7 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		{
 			perror(BOLD"ERROR: fclose: Can't close file"RESET);
 			g_free(local_data->pixel_pointer);
+			g_free(local_data);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -126,6 +129,7 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		{
 			perror(BOLD"ERROR: sprintf: Can't create string"RESET);
 			g_free(systemcall);
+			g_free(local_data);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -134,6 +138,7 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		{
 			perror(BOLD"ERROR: system: Can't save image with cp command"RESET);
 			g_free(systemcall);
+			g_free(local_data);
 			exit(EXIT_FAILURE);
 		}
 		
@@ -302,6 +307,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 		{
 			g_free(local_data->pixel_pointer);
 		}
+		g_free(local_data);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -422,6 +428,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	{
 		perror(BOLD"ERROR: fclose: Can't close file\n"RESET);
 		g_free(local_data->pixel_pointer);
+		g_free(local_data);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -613,7 +620,7 @@ static void activate (GtkApplication *app, gpointer data)
 	context = gtk_widget_get_style_context(generate_button);
 	
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "sugested-action");
+	gtk_style_context_add_class(context, "suggested-action");
 	
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), generate_button);
 	
@@ -627,7 +634,7 @@ static void activate (GtkApplication *app, gpointer data)
 	context = gtk_widget_get_style_context(save_button);
 	
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "sugested-action");
+	gtk_style_context_add_class(context, "suggested-action");
 	
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), save_button);
 	
