@@ -27,9 +27,11 @@
  *          Rev.: 12, 10.05.2017 - Added the clear function
  *          Rev.: 13, 10.05.2017 - Added a full saveimage function with dialog
  *                                 window
+ *          Rev.: 14, 11.05.2017 - Removed the bug with saveimage without
+ *                                 calculation, somehow we need 13 bytes instead
+ *                                 of 12 bytes.
  *
- * \information Having problems with free() function if no calculation but save
- *              picture with system(cp) command.
+ * \information
  *
  */
 
@@ -95,14 +97,20 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 			g_free(local_data->pixel_pointer);
 			exit(EXIT_FAILURE);
 		}
+		
+		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
 	}
 	
 /* ---- response save without calculation ---- */
 	
 	else if (response_id == GTK_RESPONSE_OK && local_data->calculation == 0)
 	{
-		systemcall = g_malloc(sizeof(gchar) * (strnlen(local_filename, sizeof(local_filename)) + 12));
+		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13));
+		
 		error = sprintf(systemcall, "cp .out.ppm %s", local_filename);
+		
+		printf("Systemcall %s\n", systemcall);
+		
 		if (error < 0)
 		{
 			perror(BOLD"ERROR: sprintf: Can't create string"RESET);
@@ -120,9 +128,15 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		}
 		
 		g_free(systemcall);
+		
+		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
 	}
 	
-	gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+	else if (response_id == GTK_RESPONSE_CANCEL)
+	{
+		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+	}
+	
 }
 
 /*------------------------------------------------------------------*/
@@ -296,20 +310,6 @@ static void calculation (GtkWidget *widget, gpointer data)
 	printf(BOLD"height"RESET ITALIC" %.0lf "RESET, height);
 	printf(BOLD"width"RESET ITALIC" %.0lf\n"RESET, width);
 #endif
-	
-/* ---- allocate memory for pixels ---- */
-	
-	if (local_data->pixel_pointer == NULL)
-	{
-		local_data->pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
-	}
-	
-	if (local_data->pixel_pointer == NULL)
-	{
-		perror(BOLD"ERROR: malloc: Can't allocate pixel memory\n"RESET);
-		g_free(local_data->pixel_pointer);
-		exit(EXIT_FAILURE);
-	}
 	
 /* ---- generate mandelbrot set with current settings ---- */
 	
@@ -670,6 +670,18 @@ int main (int argc, char *argv[])
 	
 	struct my_widgets *local_data = g_malloc(sizeof(struct my_widgets));
 	
+/* ---- allocate memory for pixels ---- */
+	
+	local_data->pixel_pointer = (PICTURE *)malloc(WIDTH * HEIGHT * sizeof(PICTURE));
+	if (local_data->pixel_pointer == NULL)
+	{
+		perror(BOLD"ERROR: malloc: Can't allocate pixel memory\n"RESET);
+		g_free(local_data->pixel_pointer);
+		g_free(local_data);
+		local_data = NULL;
+		exit(EXIT_FAILURE);
+	}
+	
 /* ---- create a threaded application ---- */
 	
 	app = gtk_application_new(NULL, G_APPLICATION_FLAGS_NONE);
@@ -682,10 +694,7 @@ int main (int argc, char *argv[])
 	
 /* ---- free the memory for the widgets struct ---- */
 	
-	if (local_data->pixel_pointer != NULL)
-	{
-		g_free(local_data->pixel_pointer);
-	}
+	g_free(local_data->pixel_pointer);
 	g_free(local_data);
 	local_data = NULL;
 	
