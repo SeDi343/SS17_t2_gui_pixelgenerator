@@ -35,6 +35,7 @@
  *          Rev.: 16, 11.05.2017 - Added g_free(local_data) to every exit operation
  *
  * \information Create Flow box for colors & statusbar & menu
+ *              Use Color Chooser or Flow Box / save picture function no dialog
  *
  */
 
