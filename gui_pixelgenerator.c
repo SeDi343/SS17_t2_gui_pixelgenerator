@@ -305,7 +305,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	if (error != 0)
 	{
-		printf(BOLD"ERROR: input: %d input is wrong\n"RESET, error);
+		g_printf(BOLD"ERROR: input: %d input is wrong\n"RESET, error);
 		if (local_data->pixel_pointer != NULL)
 		{
 			g_free(local_data->pixel_pointer);
@@ -322,18 +322,18 @@ static void calculation (GtkWidget *widget, gpointer data)
 	zoom = strtod(buffer4, &pEnd);
 	
 #if DEBUG
-	printf(BOLD"iterations"RESET ITALIC" %.0lf "RESET, iterations);
-	printf(BOLD"offset_x"RESET ITALIC" %lf "RESET, offset_x);
-	printf(BOLD"offset_y"RESET ITALIC" %lf "RESET, offset_y);
-	printf(BOLD"zoom"RESET ITALIC" %lf\t"RESET, zoom);
-	printf(BOLD"height"RESET ITALIC" %.0lf "RESET, height);
-	printf(BOLD"width"RESET ITALIC" %.0lf\n"RESET, width);
+	g_printf(BOLD"iterations"RESET ITALIC" %.0lf "RESET, iterations);
+	g_printf(BOLD"offset_x"RESET ITALIC" %lf "RESET, offset_x);
+	g_printf(BOLD"offset_y"RESET ITALIC" %lf "RESET, offset_y);
+	g_printf(BOLD"zoom"RESET ITALIC" %lf\t"RESET, zoom);
+	g_printf(BOLD"height"RESET ITALIC" %.0lf "RESET, height);
+	g_printf(BOLD"width"RESET ITALIC" %.0lf\n"RESET, width);
 #endif
 	
 /* ---- generate mandelbrot set with current settings ---- */
 	
 #if DEBUG
-	printf(BOLD"Calculating Mandelbrot Set\t"RESET);
+	g_printf(BOLD"Calculating Mandelbrot Set\t"RESET);
 #endif
 	
 	k = 0;
@@ -399,7 +399,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	}
 	
 #if DEBUG
-	printf(BOLD"Done generating set\t Writing file\t"RESET);
+	g_printf(BOLD"Done generating set\t Writing file\t"RESET);
 #endif
 	
 /* ---- writing temp file ---- */
@@ -436,7 +436,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	local_data->calculation = 1;
 	
 #if DEBUG
-	printf(BOLD"Done writing file\n\n"RESET);
+	g_printf(BOLD"Done writing file\n\n"RESET);
 #endif
 	
 	gtk_widget_destroy(local_data->image);
@@ -523,7 +523,7 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->image = gtk_image_new_from_file(".out.ppm");
 	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, FALSE, FALSE, 0);
 	
-/* ---- box in grid for buttons ---- */
+/* ---- box in grid for input ---- */
 	
 	box_2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_grid_attach(GTK_GRID(grid), box_2, 2, 0, 1, 15);
@@ -718,6 +718,6 @@ int main (int argc, char *argv[])
 	g_free(local_data);
 	local_data = NULL;
 	
-	printf("Exit application with (%d)\n", status);
+	g_printf("Exit application with (%d)\n", status);
 	return status;
 }
