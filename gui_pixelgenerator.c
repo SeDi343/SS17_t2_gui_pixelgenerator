@@ -33,6 +33,7 @@
  *          Rev.: 15, 11.05.2017 - Removed a memory access error canceling the
  *                                 dialog
  *          Rev.: 16, 11.05.2017 - Added g_free(local_data) to every exit operation
+ *          Rev.: 17, 16.05.2017 - Added g_printf instead of printf
  *
  * \information Create Flow box for colors & statusbar & menu
  *              Use Color Chooser or Flow Box / save picture function no dialog
