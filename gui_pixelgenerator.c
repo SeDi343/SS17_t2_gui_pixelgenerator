@@ -36,6 +36,8 @@
  *
  * \information Create Flow box for colors & statusbar & menu
  *              Use Color Chooser or Flow Box / save picture function no dialog
+ *              g_fopen, g_fprintf, g_sprintf, g_printf
+ *              g_fclose?
  *
  */
 
@@ -194,11 +196,11 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 	
 	context = gtk_widget_get_style_context(save_button);
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "suggested-action");
+	//gtk_style_context_add_class(context, "suggested-action");
 	
 	context = gtk_widget_get_style_context(cancel_button);
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "destructive-action");
+	//gtk_style_context_add_class(context, "destructive-action");
 	
 /* ---- change dialog window size ---- */
 	
@@ -396,8 +398,6 @@ static void calculation (GtkWidget *widget, gpointer data)
 		}
 	}
 	
-	local_data->calculation = 1;
-	
 #if DEBUG
 	printf(BOLD"Done generating set\t Writing file\t"RESET);
 #endif
@@ -432,6 +432,8 @@ static void calculation (GtkWidget *widget, gpointer data)
 		g_free(local_data);
 		exit(EXIT_FAILURE);
 	}
+	
+	local_data->calculation = 1;
 	
 #if DEBUG
 	printf(BOLD"Done writing file\n\n"RESET);
@@ -607,7 +609,7 @@ static void activate (GtkApplication *app, gpointer data)
 	context = gtk_widget_get_style_context(clr_button);
 	
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "destructive-action");
+	//gtk_style_context_add_class(context, "destructive-action");
 	
 	gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), clr_button);
 	
@@ -621,7 +623,7 @@ static void activate (GtkApplication *app, gpointer data)
 	context = gtk_widget_get_style_context(generate_button);
 	
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "suggested-action");
+	//gtk_style_context_add_class(context, "suggested-action");
 	
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), generate_button);
 	
@@ -635,7 +637,7 @@ static void activate (GtkApplication *app, gpointer data)
 	context = gtk_widget_get_style_context(save_button);
 	
 	gtk_style_context_add_class(context, "text-button");
-	gtk_style_context_add_class(context, "suggested-action");
+	//gtk_style_context_add_class(context, "suggested-action");
 	
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), save_button);
 	
