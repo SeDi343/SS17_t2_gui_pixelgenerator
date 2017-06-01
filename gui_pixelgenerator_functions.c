@@ -7,6 +7,8 @@
  * \version Rev.: 01, 09.05.2017 - Creating the c file
  *          Rev.: 02, 09.05.2017 - Added to github
  *          Rev.: 03, 10.05.2017 - Changed the check_number function
+ *          Rev.: 04, 01.06.2017 - Added write_statusbar function
+ *                                 to write given string into statusbar
  *
  * \information
  *
@@ -52,4 +54,19 @@ int check_number(char *number)
 	}
 	
 	return 0;
+}
+
+void write_statusbar(gpointer data, gchar *stringinput)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+/* ---- remove string in statusbar ---- */
+	
+	gtk_statusbar_remove_all(GTK_STATUSBAR(local_data->statusbar), local_data->id);
+	
+/* ---- write new string into statusbar with stringinput ---- */
+	
+	gtk_statusbar_push(GTK_STATUSBAR(local_data->statusbar), local_data->id, stringinput);
+	
+	gtk_widget_show(local_data->statusbar);
 }

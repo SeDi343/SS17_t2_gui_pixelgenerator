@@ -6,6 +6,7 @@
  *
  * \version Rev.: 01, 09.05.2017 - Creating the h file
  *          Rev.: 02, 09.05.2017 - Added to github
+ *          Rev.: 03, 01.06.2017 - Added statusbar and id to struct
  *
  * \information
  *
@@ -88,6 +89,8 @@ struct my_widgets
 	GtkWidget *input_filename; /* saveimage filename */
 	GtkWidget *save_dialog; /* Dialog for saveimage */
 	GtkWidget *save_label; /* Label for saveimage */
+	GtkWidget *statusbar; /* Statusbar for stauts */
+	guint id; /* requested for statusbar */
 	gint calculation; /* value if calculation was present or not */
 	struct picture_pointer *pixel_pointer; /* pixel pointer */
 };
@@ -95,5 +98,6 @@ struct my_widgets
 typedef struct picture_pointer PICTURE;
 
 int check_number(char *number);
+void write_statusbar(gpointer data, gchar *stringinput);
 
 #endif /*_pixelheader_*/

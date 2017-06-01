@@ -34,11 +34,16 @@
  *                                 dialog
  *          Rev.: 16, 11.05.2017 - Added g_free(local_data) to every exit operation
  *          Rev.: 17, 16.05.2017 - Added g_printf instead of printf
+ *          Rev.: 18, 10.06.2017 - Adding status bar
+ *          Rev.: 19, 10.06.2017 - Adding information into status bar / picture
+ *                                 generated with offset and zoom
  *
  * \information Create Flow box for colors & statusbar & menu
  *              Use Color Chooser or Flow Box / save picture function no dialog
  *              g_fopen, g_fprintf, g_sprintf, g_printf
  *              g_fclose?
+ *
+ *              348 not working
  *
  */
 
@@ -50,6 +55,8 @@
 static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer data)
 {
 	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+/* ---- local variables ---- */
 	
 	gdouble height = HEIGHT;
 	gdouble width = WIDTH;
@@ -108,6 +115,10 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		}
 		
 		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+		
+/* ---- write into statusbar ---- */
+		
+		write_statusbar((gpointer)local_data, "Saved Image");
 	}
 	
 /* ---- response save without calculation ---- */
@@ -126,9 +137,9 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		
 /* ---- create a systemcall for cp command because the only information we have ---- */
 		
-		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13));
+		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13)); // no idea why 1 more
 		
-		error = sprintf(systemcall, "cp .out.ppm %s", local_filename);
+		error = g_sprintf(systemcall, "cp .out.ppm %s", local_filename);
 		if (error < 0)
 		{
 			perror(BOLD"ERROR: sprintf: Can't create string"RESET);
@@ -149,11 +160,19 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		g_free(systemcall);
 		
 		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+		
+/* ---- write into statusbar ---- */
+		
+		write_statusbar((gpointer)local_data, "Saved Image");
 	}
 	
 	else if (response_id == GTK_RESPONSE_CANCEL)
 	{
 		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+		
+/* ---- write into statusbar ---- */
+		
+		write_statusbar((gpointer)local_data, "Quit saving Image");
 	}
 }
 
@@ -240,10 +259,16 @@ static void clr_clicked (GtkWidget *widget, gpointer data)
 {
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
+/* ---- removing input to default values ---- */
+	
 	gtk_entry_set_text(GTK_ENTRY(local_data->input_iterations), "100");
 	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_x), "-0,5");
 	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_y), "0");
 	gtk_entry_set_text(GTK_ENTRY(local_data->input_zoom), "1");
+	
+/* ---- write into statusbar ---- */
+	
+	write_statusbar((gpointer)local_data, "Cleared Input");
 }
 
 /*------------------------------------------------------------------*/
@@ -275,6 +300,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gint i, k;
 	gint error = 0;
 	gchar *pEnd;
+	gchar *message;
 	
 	FILE *pFout = NULL;
 	
@@ -315,6 +341,14 @@ static void calculation (GtkWidget *widget, gpointer data)
 		exit(EXIT_FAILURE);
 	}
 	
+/* ---- allocate memory for statusbar output ---- */
+	
+	message = g_malloc(sizeof(gchar) * 5000);
+	
+/* ---- write into statusbar ---- */
+	
+	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
+	
 /* ---- fill variables from buffer ---- */
 	
 	iterations = strtod(buffer1, &pEnd);
@@ -323,12 +357,12 @@ static void calculation (GtkWidget *widget, gpointer data)
 	zoom = strtod(buffer4, &pEnd);
 	
 #if DEBUG
-	g_printf(BOLD"iterations"RESET ITALIC" %.0lf "RESET, iterations);
-	g_printf(BOLD"offset_x"RESET ITALIC" %lf "RESET, offset_x);
-	g_printf(BOLD"offset_y"RESET ITALIC" %lf "RESET, offset_y);
-	g_printf(BOLD"zoom"RESET ITALIC" %lf\t"RESET, zoom);
-	g_printf(BOLD"height"RESET ITALIC" %.0lf "RESET, height);
-	g_printf(BOLD"width"RESET ITALIC" %.0lf\n"RESET, width);
+	g_printf("iterations"BOLD ITALIC" %.0lf "RESET, iterations);
+	g_printf("offset_x"BOLD ITALIC" %lf "RESET, offset_x);
+	g_printf("offset_y"BOLD ITALIC" %lf "RESET, offset_y);
+	g_printf("zoom"BOLD ITALIC" %lf\t"RESET, zoom);
+	g_printf("height"BOLD ITALIC" %.0lf "RESET, height);
+	g_printf("width"BOLD ITALIC" %.0lf\n"RESET, width);
 #endif
 	
 /* ---- generate mandelbrot set with current settings ---- */
@@ -447,6 +481,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 /* ---- show image widget ---- */
 	
 	gtk_widget_show(local_data->image);
+	
+	g_snprintf(message, sizeof(gchar)*5000, "Generated Mandelbrot with OffsetX: %lf, OffsetY: %lf, Zoom: %lf", offset_x, offset_y, zoom);
+	
+	write_statusbar((gpointer)local_data, message);
 }
 
 /*------------------------------------------------------------------*/
@@ -480,6 +518,7 @@ static void activate (GtkApplication *app, gpointer data)
 	GtkWidget *save_button; /* save button */
 	GtkWidget *headerbar; /* headerbar */
 	GtkWidget *box_2; /* buttons */
+	GtkWidget *box_3; /* statusbar */
 	GtkStyleContext *context;
 #if GTK_NEW
 	GtkStyleProvider *provider;
@@ -591,6 +630,17 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(calculation), (gpointer)local_data);
 	g_signal_connect(local_data->input_iterations, "activate", G_CALLBACK(calculation), (gpointer)local_data);
+	
+/* ---- create statusbar and new box ---- */
+	
+	box_3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), box_3, 0, 14, 1, 1);
+	
+	local_data->statusbar = gtk_statusbar_new();
+	gtk_widget_set_size_request(local_data->statusbar, 300, 10);
+	gtk_box_pack_start(GTK_BOX(box_3), local_data->statusbar, FALSE, FALSE, 0);
+	local_data->id = gtk_statusbar_get_context_id(GTK_STATUSBAR(local_data->statusbar), "statusbar");
+	context = gtk_widget_get_style_context(local_data->statusbar);
 	
 /* ---- create a headerbar ---- */
 	
