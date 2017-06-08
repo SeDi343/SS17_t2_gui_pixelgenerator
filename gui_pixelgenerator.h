@@ -7,6 +7,8 @@
  * \version Rev.: 01, 09.05.2017 - Creating the h file
  *          Rev.: 02, 09.05.2017 - Added to github
  *          Rev.: 03, 01.06.2017 - Added statusbar and id to struct
+ *          Rev.: 04, 08.06.2017 - Adding library and function declarations for
+ *                                 menu
  *
  * \information
  *
@@ -19,6 +21,7 @@
 
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
+#include <gdk/gdkkeysyms.h>
 
 /* ---- STANDARD LIBRARS ---- */
 
@@ -79,6 +82,7 @@ struct picture_pointer
 
 struct my_widgets
 {
+	GtkApplication *app; /* Application */
 	GtkWidget *window; /* main window */
 	GtkWidget *image; /* mandelbrot image */
 	GtkWidget *input_iterations; /* input iteratoins */
@@ -90,6 +94,7 @@ struct my_widgets
 	GtkWidget *save_dialog; /* Dialog for saveimage */
 	GtkWidget *save_label; /* Label for saveimage */
 	GtkWidget *statusbar; /* Statusbar for stauts */
+	GtkWidget *headerbar; /* headerbar */
 	guint id; /* requested for statusbar */
 	gint calculation; /* value if calculation was present or not */
 	struct picture_pointer *pixel_pointer; /* pixel pointer */
@@ -97,7 +102,13 @@ struct my_widgets
 
 typedef struct picture_pointer PICTURE;
 
-int check_number(char *number);
-void write_statusbar(gpointer data, gchar *stringinput);
+int check_number (char *number);
+void write_statusbar (gpointer data, gchar *stringinput);
+void close_dialog (GtkDialog *dialog, gint response_id, gpointer data);
+void about_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data);
+void help_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data);
+void about_callback (GSimpleAction *action, GVariant *parameter, gpointer data);
+void help_callback (GSimpleAction *action, GVariant *parameter, gpointer data);
+void quit_callback (GSimpleAction *action, GVariant *parameter, gpointer data);
 
 #endif /*_pixelheader_*/

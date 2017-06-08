@@ -34,9 +34,10 @@
  *                                 dialog
  *          Rev.: 16, 11.05.2017 - Added g_free(local_data) to every exit operation
  *          Rev.: 17, 16.05.2017 - Added g_printf instead of printf
- *          Rev.: 18, 10.06.2017 - Adding status bar
- *          Rev.: 19, 10.06.2017 - Adding information into status bar / picture
+ *          Rev.: 18, 01.06.2017 - Adding status bar
+ *          Rev.: 19, 01.06.2017 - Adding information into status bar / picture
  *                                 generated with offset and zoom
+ *          Rev.: 20, 08.06.2017 - Adding menu
  *
  * \information Create Flow box for colors & statusbar & menu
  *              Use Color Chooser or Flow Box / save picture function no dialog
@@ -48,6 +49,58 @@
  */
 
 #include "gui_pixelgenerator.h"
+
+
+/*------------------------------------------------------------------*/
+/* G L O B A L   V A R I A B L E S   F O R   M E N U                */
+/*------------------------------------------------------------------*/
+const GActionEntry app_actions[] = {
+	{"quit", quit_callback},
+	{"about", about_callback},
+	{"help", help_callback}
+};
+
+/*------------------------------------------------------------------*/
+/* C R E A T E   M E N U   F U N C T I O N                          */
+/*------------------------------------------------------------------*/
+static void construct_menu (GtkApplication *app, GtkWidget *box, gpointer data)
+{
+	GMenu *gearmenu;
+	GtkWidget *gearmenubutton;
+	GtkWidget *gearicon;
+	
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+/* ---- keyboard accelerators ---- */
+	
+	const gchar *quit_accels[2] = {"<Ctrl>Q", NULL};
+	const gchar *help_accels[2] = {"F1", NULL};
+	const gchar *about_accels[2] = {"<Ctrl>A", NULL};
+	
+/* ---- create gear menu ---- */
+	
+	gearmenubutton = gtk_menu_button_new();
+	gearicon = gtk_image_new_from_icon_name("emblem-system-symbolic", GTK_ICON_SIZE_SMALL_TOOLBAR);
+	gtk_button_set_image(GTK_BUTTON(gearmenubutton), gearicon);
+	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), gearmenubutton);
+	
+/* ---- create menu ---- */
+	
+	gearmenu = g_menu_new();
+	g_menu_append(gearmenu, "_Help", "app.help");
+	g_menu_append(gearmenu, "_About", "app.about");
+	g_menu_append(gearmenu, "_Quit", "app.quit");
+	
+	gtk_menu_button_set_menu_model(GTK_MENU_BUTTON(gearmenubutton), G_MENU_MODEL(gearmenu));
+	
+	g_object_unref(gearmenu);
+	
+/* ---- connect keyboard accelerations ---- */
+	
+	gtk_application_set_accels_for_action(GTK_APPLICATION(local_data->app), "app.help", help_accels);
+	gtk_application_set_accels_for_action(GTK_APPLICATION(local_data->app), "app.quit", quit_accels);
+	gtk_application_set_accels_for_action(GTK_APPLICATION(local_data->app), "app.about", about_accels);
+}
 
 /*------------------------------------------------------------------*/
 /* D I A L O G   S A V E   R E S P O N S E   F U N C T I O N        */
@@ -516,7 +569,6 @@ static void activate (GtkApplication *app, gpointer data)
 	GtkWidget *name_color; /* color title */
 	GtkWidget *clr_button, *generate_button; /* ok and generate buttons */
 	GtkWidget *save_button; /* save button */
-	GtkWidget *headerbar; /* headerbar */
 	GtkWidget *box_2; /* buttons */
 	GtkWidget *box_3; /* statusbar */
 	GtkStyleContext *context;
@@ -539,7 +591,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- create the window and associate an icon ---- */
 	
-	local_data->window = gtk_application_window_new(app);
+	local_data->window = gtk_application_window_new(local_data->app);
 	
 	gtk_window_set_resizable(GTK_WINDOW(local_data->window), FALSE);
 	//gtk_window_set_default_size(GTK_WINDOW(local_data->window), 1280, 720);
@@ -644,15 +696,15 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- create a headerbar ---- */
 	
-	headerbar = gtk_header_bar_new();
+	local_data->headerbar = gtk_header_bar_new();
 	
-	gtk_widget_show(headerbar);
+	gtk_widget_show(local_data->headerbar);
 	
-	gtk_header_bar_set_title(GTK_HEADER_BAR(headerbar), "GUI Mandelbrot Set Generator");
-	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(headerbar), "GUI Task | el16b032");
+	gtk_header_bar_set_title(GTK_HEADER_BAR(local_data->headerbar), "GUI Mandelbrot Set Generator");
+	gtk_header_bar_set_subtitle(GTK_HEADER_BAR(local_data->headerbar), "GUI Task | el16b032");
 	
-	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(headerbar), TRUE);
-	gtk_window_set_titlebar(GTK_WINDOW(local_data->window), headerbar);
+	gtk_header_bar_set_show_close_button(GTK_HEADER_BAR(local_data->headerbar), TRUE);
+	gtk_window_set_titlebar(GTK_WINDOW(local_data->window), local_data->headerbar);
 	
 /* ---- put a clear button to the left side of the header bar ---- */
 	
@@ -662,7 +714,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "destructive-action");
 	
-	gtk_header_bar_pack_start(GTK_HEADER_BAR(headerbar), clr_button);
+	gtk_header_bar_pack_start(GTK_HEADER_BAR(local_data->headerbar), clr_button);
 	
 /* ---- connect a signal when the CLEAR button is clicked ---- */
 	
@@ -676,7 +728,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "suggested-action");
 	
-	gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), generate_button);
+	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), generate_button);
 	
 /* ---- connect a signal when the GENERATE button is clicked ---- */
 	
@@ -690,11 +742,15 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "suggested-action");
 	
-	gtk_header_bar_pack_end(GTK_HEADER_BAR(headerbar), save_button);
+	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), save_button);
 	
 /* ---- connect a signal when the SAVE button is clicked ---- */
 	
 	g_signal_connect(save_button, "clicked", G_CALLBACK(dialog_savebutton), (gpointer)local_data);
+	
+/* ---- create menu ---- */
+	
+	construct_menu(app, NULL, (gpointer)local_data);
 	
 /* ---- add styles ---- */
 	
@@ -730,11 +786,22 @@ static void activate (GtkApplication *app, gpointer data)
 }
 
 /*------------------------------------------------------------------*/
+/* S T A R T U P   C A L L B A C K S                                */
+/*------------------------------------------------------------------*/
+static void startup (GApplication *app, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+/* ---- connect actions with callbacks ---- */
+	
+	g_action_map_add_action_entries(G_ACTION_MAP(app), app_actions, G_N_ELEMENTS(app_actions), (gpointer)local_data);
+}
+
+/*------------------------------------------------------------------*/
 /* M A I N   F U N C T I O N                                        */
 /*------------------------------------------------------------------*/
 int main (int argc, char *argv[])
 {
-	GtkApplication *app;
 	int status;
 	
 /* ---- we need some memory for the widgets struct ---- */
@@ -755,13 +822,14 @@ int main (int argc, char *argv[])
 	
 /* ---- create a threaded application ---- */
 	
-	app = gtk_application_new(NULL, G_APPLICATION_FLAGS_NONE);
-	g_signal_connect(app, "activate", G_CALLBACK(activate), (gpointer)local_data);
+	local_data->app = gtk_application_new(NULL, G_APPLICATION_FLAGS_NONE);
+	g_signal_connect(local_data->app, "activate", G_CALLBACK(activate), (gpointer)local_data);
+	g_signal_connect(local_data->app, "startup", G_CALLBACK(startup), (gpointer)local_data);
 	
 /* ---- run the application ---- */
 	
-	status = g_application_run(G_APPLICATION(app), argc, argv);
-	g_object_unref(app);
+	status = g_application_run(G_APPLICATION(local_data->app), argc, argv);
+	g_object_unref(local_data->app);
 	
 /* ---- free the memory for the widgets struct ---- */
 	
