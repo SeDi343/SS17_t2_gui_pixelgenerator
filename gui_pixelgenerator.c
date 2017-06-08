@@ -39,9 +39,9 @@
  *                                 generated with offset and zoom
  *          Rev.: 20, 08.06.2017 - Adding menu
  *
- * \information Create Flow box for colors & statusbar & menu
+ * \information Create Flow box for colors & statusbar done & menu done
  *              Use Color Chooser or Flow Box / save picture function no dialog
- *              g_fopen, g_fprintf, g_sprintf, g_printf
+ *              g_fopen, g_fprintf, g_sprintf, g_printf used
  *              g_fclose?
  *
  *              348 not working
@@ -107,8 +107,6 @@ static void construct_menu (GtkApplication *app, GtkWidget *box, gpointer data)
 /*------------------------------------------------------------------*/
 static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer data)
 {
-	struct my_widgets *local_data = (struct my_widgets *)data;
-	
 /* ---- local variables ---- */
 	
 	gdouble height = HEIGHT;
@@ -120,6 +118,8 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 	gint error;
 	
 	FILE *pFout = NULL;
+	
+	struct my_widgets *local_data = (struct my_widgets *)data;
 	
 /* ---- response save with calculation ---- */
 	
@@ -188,9 +188,9 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 			sprintf(local_filename, "%s.ppm", local_filename);
 		}
 		
-/* ---- create a systemcall for cp command because the only information we have ---- */
+/* ---- create a systemcall for cp command ---- */
 		
-		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13)); // no idea why 1 more
+		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13)); // no idea why 1 more (\r?)
 		
 		error = g_sprintf(systemcall, "cp .out.ppm %s", local_filename);
 		if (error < 0)
@@ -244,14 +244,14 @@ static void dialog_save_entry (GtkWidget *widget, gpointer data)
 /*------------------------------------------------------------------*/
 static void dialog_savebutton (GtkWidget *widget, gpointer data)
 {
-	struct my_widgets *local_data = (struct my_widgets *)data;
-	
 	GtkWidget *grid;
 	GtkWidget *label;
 	GtkWidget *save_button;
 	GtkWidget *cancel_button;
 	GtkStyleContext *context;
 	GtkWidget *content_area;
+	
+	struct my_widgets *local_data = (struct my_widgets *)data;
 	
 /* ---- create a new dialog ---- */
 	
@@ -269,11 +269,11 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 	
 	context = gtk_widget_get_style_context(save_button);
 	gtk_style_context_add_class(context, "text-button");
-	//gtk_style_context_add_class(context, "suggested-action");
+/*	gtk_style_context_add_class(context, "suggested-action");*/
 	
 	context = gtk_widget_get_style_context(cancel_button);
 	gtk_style_context_add_class(context, "text-button");
-	//gtk_style_context_add_class(context, "destructive-action");
+/*	gtk_style_context_add_class(context, "destructive-action");*/
 	
 /* ---- change dialog window size ---- */
 	
@@ -329,8 +329,6 @@ static void clr_clicked (GtkWidget *widget, gpointer data)
 /*------------------------------------------------------------------*/
 static void calculation (GtkWidget *widget, gpointer data)
 {
-	struct my_widgets *local_data = (struct my_widgets *)data;
-	
 	gchar *buffer1; /* iterations */
 	gchar *buffer2; /* offset x */
 	gchar *buffer3; /* offset y */
@@ -356,6 +354,8 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gchar *message;
 	
 	FILE *pFout = NULL;
+	
+	struct my_widgets *local_data = (struct my_widgets *)data;
 	
 /* ---- read input ---- */
 	
@@ -464,22 +464,34 @@ static void calculation (GtkWidget *widget, gpointer data)
 				(local_data->pixel_pointer+k)->b = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
 				
 				if ((local_data->pixel_pointer+k)->r < 0)
+				{
 					(local_data->pixel_pointer+k)->r = 0;
+				}
 				
 				if ((local_data->pixel_pointer+k)->g < 0)
+				{
 					(local_data->pixel_pointer+k)->g = 0;
+				}
 				
 				if ((local_data->pixel_pointer+k)->b < 0)
+				{
 					(local_data->pixel_pointer+k)->b = 0;
+				}
 				
 				if ((local_data->pixel_pointer+k)->r > 255)
+				{
 					(local_data->pixel_pointer+k)->r = 255;
+				}
 				
 				if ((local_data->pixel_pointer+k)->g > 255)
+				{
 					(local_data->pixel_pointer+k)->g = 255;
+				}
 				
 				if ((local_data->pixel_pointer+k)->b > 255)
+				{
 					(local_data->pixel_pointer+k)->b = 255;
+				}
 			}
 			
 			k++;
@@ -503,6 +515,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
 	fprintf(pFout, "255\n");
+	fprintf(pFout, "#OffsetX: %lf, Offset: %lf, Zoom: %lf\n", offset_x, offset_y, zoom);
 	
 	for (i = 0; i < height*width; i++)
 	{
@@ -571,6 +584,7 @@ static void activate (GtkApplication *app, gpointer data)
 	GtkWidget *save_button; /* save button */
 	GtkWidget *box_2; /* buttons */
 	GtkWidget *box_3; /* statusbar */
+	GtkWidget *separator;
 	GtkStyleContext *context;
 #if GTK_NEW
 	GtkStyleProvider *provider;
@@ -580,8 +594,6 @@ static void activate (GtkApplication *app, gpointer data)
 	GdkDisplay *display;
 	GdkScreen *screen;
 #endif
-	
-/* ---- obtain reference to the widget passed as generic data pointer ---- */
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
@@ -594,9 +606,8 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->window = gtk_application_window_new(local_data->app);
 	
 	gtk_window_set_resizable(GTK_WINDOW(local_data->window), FALSE);
-	//gtk_window_set_default_size(GTK_WINDOW(local_data->window), 1280, 720);
+/*	gtk_window_set_default_size(GTK_WINDOW(local_data->window), 1280, 720);*/
 	gtk_window_set_default_icon_from_file("icon.jpg", NULL);
-	
 	gtk_window_set_position(GTK_WINDOW(local_data->window), GTK_WIN_POS_CENTER);
 	
 /* ---- create a grid to be used as layout container ---- */
@@ -611,6 +622,9 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	local_data->box_1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_grid_attach(GTK_GRID(grid), local_data->box_1, 0, 0, 1, 1);
+	
+	separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_box_pack_end(GTK_BOX(local_data->box_1), separator, FALSE, TRUE, 0);
 	
 	local_data->image = gtk_image_new_from_file(".out.ppm");
 	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, FALSE, FALSE, 0);
@@ -683,7 +697,7 @@ static void activate (GtkApplication *app, gpointer data)
 	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(calculation), (gpointer)local_data);
 	g_signal_connect(local_data->input_iterations, "activate", G_CALLBACK(calculation), (gpointer)local_data);
 	
-/* ---- create statusbar and new box ---- */
+/* ---- create statusbar separator and new box ---- */
 	
 	box_3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	gtk_grid_attach(GTK_GRID(grid), box_3, 0, 14, 1, 1);
@@ -692,6 +706,7 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_widget_set_size_request(local_data->statusbar, 300, 10);
 	gtk_box_pack_start(GTK_BOX(box_3), local_data->statusbar, FALSE, FALSE, 0);
 	local_data->id = gtk_statusbar_get_context_id(GTK_STATUSBAR(local_data->statusbar), "statusbar");
+	gtk_widget_set_name(local_data->statusbar, "style_output");
 	context = gtk_widget_get_style_context(local_data->statusbar);
 	
 /* ---- create a headerbar ---- */
@@ -713,7 +728,6 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "destructive-action");
-	
 	gtk_header_bar_pack_start(GTK_HEADER_BAR(local_data->headerbar), clr_button);
 	
 /* ---- connect a signal when the CLEAR button is clicked ---- */
@@ -727,7 +741,6 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "suggested-action");
-	
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), generate_button);
 	
 /* ---- connect a signal when the GENERATE button is clicked ---- */
@@ -741,7 +754,6 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "suggested-action");
-	
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), save_button);
 	
 /* ---- connect a signal when the SAVE button is clicked ---- */
@@ -767,12 +779,12 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider),
-								"GtkWindow {\n"
-								"   background-color: #333333;\n"
-								"}\n"
+/*								"GtkWindow {\n"*/
+/*								"   background-color: #333333;\n"*/
+/*								"}\n"*/
 								"#style_output\n"
 								"{\n"
-								"   color: #ffffff;\n"
+/*								"   color: #ffffff;\n"*/
 								"   font-size: 14px;\n"
 								"   font-family: 'Arial';\n"
 								"   font-weight: normal;\n"
