@@ -41,6 +41,7 @@
  *          Rev.: 21, 09.06.2017 - Added spinner and colormapping
  *          Rev.: 22, 09.06.2017 - Changed Font from Arial to Ubuntu
  *          Rev.: 23, 09.06.2017 - Added welcome message and border width
+ *          Rev.: 24, 09.06.2017 - Removed Unused style resource
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
@@ -945,8 +946,6 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider),
-								"GtkWindow {\n"
-								"}\n"
 								"#style_output\n"
 								"{\n"
 								"	font-size: 14px;\n"

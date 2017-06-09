@@ -1,6 +1,3 @@
-window {
-}
-
 /* In order to select the label using a name use gtk_widget_set_name() in the
    code to give it a name. Within the CSS you may reference it using 
    "#name" as shown below.
