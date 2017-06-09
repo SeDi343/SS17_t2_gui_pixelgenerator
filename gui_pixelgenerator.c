@@ -69,6 +69,8 @@ static void on_play_clicked(gpointer data)
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
 	gtk_spinner_start(GTK_SPINNER(local_data->spinner));
+	
+	gtk_widget_show_all(local_data->window);
 }
 
 /*------------------------------------------------------------------*/
@@ -79,6 +81,8 @@ static void on_stop_clicked(gpointer data)
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
 	gtk_spinner_stop(GTK_SPINNER(local_data->spinner));
+	
+	gtk_widget_show_all(local_data->window);
 }
 
 /*------------------------------------------------------------------*/
@@ -646,7 +650,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	gtk_widget_show(local_data->image);
 	
-	g_snprintf(message, sizeof(gchar)*5000, "Generated Mandelbrot with OffsetX: %lf, OffsetY: %lf, Zoom: %lf", offset_x, offset_y, zoom);
+	g_snprintf(message, sizeof(gchar)*5000, "Generated Mandelbrot with OffsetX: %.10lf, OffsetY: %.10lf, Zoom: %.10lf", offset_x, offset_y, zoom);
 	
 	write_statusbar((gpointer)local_data, message);
 	on_stop_clicked((gpointer)local_data);
