@@ -39,6 +39,7 @@
  *                                 generated with offset and zoom
  *          Rev.: 20, 08.06.2017 - Adding menu
  *          Rev.: 21, 09.06.2017 - Added spinner and colormapping
+ *          Rev.: 22, 09.06.2017 - Changed Font from Arial to Ubuntu
  *
  * \information Create Flow box for colors & statusbar done & menu done
  *              Use Color Chooser or Flow Box / save picture function no dialog
