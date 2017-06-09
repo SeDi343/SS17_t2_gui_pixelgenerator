@@ -40,6 +40,7 @@
  *          Rev.: 20, 08.06.2017 - Adding menu
  *          Rev.: 21, 09.06.2017 - Added spinner and colormapping
  *          Rev.: 22, 09.06.2017 - Changed Font from Arial to Ubuntu
+ *          Rev.: 23, 09.06.2017 - Added welcome message and border width
  *
  * \information Create Flow box for colors & statusbar done & menu done
  *              Use Color Chooser or Flow Box / save picture function no dialog
@@ -739,7 +740,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
 	gtk_container_add(GTK_CONTAINER(local_data->window), grid);
-	gtk_container_set_border_width(GTK_CONTAINER(local_data->window), 5);
+	gtk_container_set_border_width(GTK_CONTAINER(local_data->window), 0);
 	
 /* ---- box in grid for mandelbrot set ---- */
 	
@@ -877,6 +878,7 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->id = gtk_statusbar_get_context_id(GTK_STATUSBAR(local_data->statusbar), "statusbar");
 	gtk_widget_set_name(local_data->statusbar, "style_statusbar");
 	context = gtk_widget_get_style_context(local_data->statusbar);
+	write_statusbar((gpointer)local_data, "Welcome to the GUI Mandelbrot Set Generator!");
 	
 /* ---- create a headerbar ---- */
 	
