@@ -42,10 +42,8 @@
  *          Rev.: 22, 09.06.2017 - Changed Font from Arial to Ubuntu
  *          Rev.: 23, 09.06.2017 - Added welcome message and border width
  *
- * \information Create Flow box for colors & statusbar done & menu done
- *              Use Color Chooser or Flow Box / save picture function no dialog
- *              g_fopen, g_fprintf, g_sprintf, g_printf used
- *              g_fclose?
+ * \information changed algorithm, main structure from
+ *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
  *              348 not working
  *
