@@ -45,7 +45,11 @@
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
- *              348 not working
+ *              for some reasons the function on_play_clicked and write_statusbar
+ *              are not working in the precalculation function but g_printf does
+ *
+ *              will edit the mandelbrot algorithm and color mapping method
+ *              with Helmut -> add him to the authors, documenters
  *
  */
 
