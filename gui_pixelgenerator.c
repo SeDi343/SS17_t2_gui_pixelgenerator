@@ -672,7 +672,6 @@ static void precalculation (GtkWidget *widget, gpointer data)
 	on_play_clicked((gpointer)local_data);
 	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
 	g_printf("Should have printed and activated spinner\n");
-	
 	calculation(NULL, (gpointer)local_data);
 }
 
