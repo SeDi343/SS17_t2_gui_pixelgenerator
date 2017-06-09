@@ -113,12 +113,10 @@ void about_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data)
 
 void help_dialog (GSimpleAction *action, GVariant *parameter, gpointer data)
 {
-/*	const gchar *name;*/
 	GtkWidget *dialog;
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 
-/*	name = g_action_get_name(G_ACTION(action));*/
 	dialog = gtk_message_dialog_new(GTK_WINDOW(local_data->window),
 					GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_MESSAGE_INFO,

@@ -362,6 +362,8 @@ static void colormapping (GtkWidget *widget, gpointer data)
 		radio[i] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(local_data->color_radio[i]));
 	}
 	
+/* ---- change colormapping variable for choosen color ---- */
+	
 	if (radio[0] == TRUE || radio[1] == TRUE || radio[2] == TRUE || radio[3] == TRUE)
 	{
 		if (radio[0] == TRUE)
@@ -400,9 +402,9 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gdouble offset_x;
 	gdouble offset_y;
 	gdouble zoom;
-	gdouble colorr = 256;
-	gdouble colorg = 256;
-	gdouble colorb = 256;
+	gdouble colorr;
+	gdouble colorg;
+	gdouble colorb;
 	gdouble width = WIDTH;
 	gdouble height = HEIGHT;
 	
@@ -490,7 +492,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 			colorb = 256;
 			break;
 			
-		default: /*default colormapping in case of error */
+		default: /*default colormapping in case of error reading radio buttons */
 			colorr = 256;
 			colorg = 256;
 			colorb = 256;
@@ -755,17 +757,23 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_container_add(GTK_CONTAINER(box_2), grid_settings);
 	gtk_container_set_border_width(GTK_CONTAINER(box_2), 5);
 	
+/* ---- headings for input ---- */
+	
 	name_iterations = gtk_label_new("Iterations:");
 	name_offset_x = gtk_label_new("Offset X:");
 	name_offset_y = gtk_label_new("Offset Y:");
 	name_zoom = gtk_label_new("Zoomfactor:");
 	name_color = gtk_label_new("Colortemplate:");
 	
+/* ---- headings at the left side ---- */
+	
 	gtk_widget_set_halign(name_iterations, GTK_ALIGN_START);
 	gtk_widget_set_halign(name_offset_x, GTK_ALIGN_START);
 	gtk_widget_set_halign(name_offset_y, GTK_ALIGN_START);
 	gtk_widget_set_halign(name_zoom, GTK_ALIGN_START);
 	gtk_widget_set_halign(name_color, GTK_ALIGN_START);
+	
+/* ---- headings with style_output style ---- */
 	
 	gtk_widget_set_name(name_iterations, "style_output");
 	gtk_widget_set_name(name_offset_x, "style_output");
@@ -779,13 +787,15 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_widget_set_size_request(name_zoom, 50, 40);
 	gtk_widget_set_size_request(name_color, 50, 40);
 	
+/* ---- place headings into gird ---- */
+	
 	gtk_grid_attach(GTK_GRID(grid_settings), name_iterations, 0, 1, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid_settings), name_offset_x, 0, 4, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid_settings), name_offset_y, 0, 7, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid_settings), name_zoom, 0, 10, 1, 1);
 	gtk_grid_attach(GTK_GRID(grid_settings), name_color, 0, 12, 1, 1);
 	
-/* ---- text entry with placeholder text ---- */
+/* ---- text entry with placeholder text/text ---- */
 	
 	local_data->input_iterations = gtk_entry_new();
 	local_data->input_offset_x = gtk_entry_new();
@@ -852,6 +862,8 @@ static void activate (GtkApplication *app, gpointer data)
 	separator2 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
 	gtk_box_pack_start(GTK_BOX(box_4), separator2, FALSE, TRUE, 5);
 	
+/* ---- create statusbar ---- */
+	
 	local_data->statusbar = gtk_statusbar_new();
 	gtk_widget_set_size_request(local_data->statusbar, 300, 10);
 	gtk_box_pack_start(GTK_BOX(box_4), local_data->statusbar, FALSE, FALSE, 0);
@@ -874,26 +886,22 @@ static void activate (GtkApplication *app, gpointer data)
 /* ---- put a clear button to the left side of the header bar ---- */
 	
 	clr_button = gtk_button_new_with_mnemonic("_Clear");
-	context = gtk_widget_get_style_context(clr_button);
 	
+	context = gtk_widget_get_style_context(clr_button);
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "destructive-action");
 	gtk_header_bar_pack_start(GTK_HEADER_BAR(local_data->headerbar), clr_button);
-	
-/* ---- connect a signal when the CLEAR button is clicked ---- */
 	
 	g_signal_connect(clr_button, "clicked", G_CALLBACK(clr_clicked), (gpointer)local_data);
 	
 /* ---- put a okay button to the right side of the header bar ---- */
 	
 	generate_button = gtk_button_new_with_mnemonic("_Generate");
-	context = gtk_widget_get_style_context(generate_button);
 	
+	context = gtk_widget_get_style_context(generate_button);
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "suggested-action");
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), generate_button);
-	
-/* ---- connect a signal when the GENERATE button is clicked ---- */
 	
 	g_signal_connect(generate_button, "clicked", G_CALLBACK(precalculation), (gpointer)local_data);
 	
@@ -905,13 +913,11 @@ static void activate (GtkApplication *app, gpointer data)
 /* ---- put save button to the right side of the header bar ---- */
 	
 	save_button = gtk_button_new_with_mnemonic("_Save Picture");
-	context = gtk_widget_get_style_context(save_button);
 	
+	context = gtk_widget_get_style_context(save_button);
 	gtk_style_context_add_class(context, "text-button");
 	//gtk_style_context_add_class(context, "suggested-action");
 	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), save_button);
-	
-/* ---- connect a signal when the SAVE button is clicked ---- */
 	
 	g_signal_connect(save_button, "clicked", G_CALLBACK(dialog_savebutton), (gpointer)local_data);
 	
