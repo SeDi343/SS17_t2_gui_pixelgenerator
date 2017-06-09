@@ -849,8 +849,10 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- connect a signal when ENTER is hit within the entry box ---- */
 	
-	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
 	g_signal_connect(local_data->input_iterations, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_offset_x, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_offset_y, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
 	
 /* ---- create statusbar separator and new box ---- */
 	

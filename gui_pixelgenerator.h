@@ -69,7 +69,7 @@
 #define GTK_NEW !GTK_OLD
 
 #define HEIGHT 600
-#define WIDTH 800
+#define WIDTH 1024
 
 #define STRINGLENGTH 500
 #define BUTTON_AMMOUNT 4
