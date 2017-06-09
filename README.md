@@ -1,7 +1,7 @@
-#Simple GUI Mandelbrot Generator
+# Simple GUI Mandelbrot Generator
 A simple GUI GTK Mandelbrot Generator  
   
-Use `make` to compile the code. Attention: We need GTK to compile this program
+Use `make` to compile the code. Attention: We need GTK to compile this program  
 <pre>
 Iterations:      Number of Calculations
 Offset X:        The offset on x axis
