@@ -951,13 +951,13 @@ static void activate (GtkApplication *app, gpointer data)
 								"#style_output\n"
 								"{\n"
 								"	font-size: 14px;\n"
-								"	font-family: 'Arial';\n"
+								"	font-family: 'Ubuntu';\n"
 								"	font-weight: normal;\n"
 								"}\n"
 								"#style_statusbar\n"
 								"{\n"
 								"	font-size: 12px;\n"
-								"	font-family: 'Areal';\n"
+								"	font-family: 'Ubuntu';\n"
 								"	font-weight: normal;\n"
 								"}\n",
 								-1, NULL);

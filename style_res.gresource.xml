@@ -2,6 +2,7 @@
 <gresources>
   <gresource prefix="/css_style">
     <file>css_style.css</file>
+    <file>Ubuntu.ttf</file>
   </gresource>
 </gresources>
 

@@ -11,12 +11,12 @@ window {
 {
 	#color: #ffffff;
 	font-size: 14px;
-	font-family: "Arial";
+	font-family: 'Ubuntu';
 	font-weight: normal;
 }
 #style_statusbar
 {
 	font-size: 12px;
-	font-family: 'Areal';
+	font-family: 'Ubuntu';
 	font-weight: normal;
 }
