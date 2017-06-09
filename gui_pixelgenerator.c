@@ -176,6 +176,7 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 		fprintf(pFout, "P3\n");
 		fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
 		fprintf(pFout, "255\n");
+		fprintf(pFout, "#Generated with GUI Mandelbrot Generator\n");
 		
 		for (i = 0; i < height*width; i++)
 		{
@@ -619,7 +620,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	fprintf(pFout, "P3\n");
 	fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
 	fprintf(pFout, "255\n");
-	fprintf(pFout, "#OffsetX: %lf, Offset: %lf, Zoom: %lf\n", offset_x, offset_y, zoom);
+	fprintf(pFout, "#OffsetX: %.15lf, Offset: %.15lf, Zoom: %.15lf\n", offset_x, offset_y, zoom);
 	
 	for (i = 0; i < height*width; i++)
 	{
@@ -652,7 +653,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	gtk_widget_show(local_data->image);
 	
-	g_snprintf(message, sizeof(gchar)*5000, "Generated Mandelbrot with OffsetX: %.10lf, OffsetY: %.10lf, Zoom: %.10lf", offset_x, offset_y, zoom);
+	g_snprintf(message, sizeof(gchar)*5000, "Generated Mandelbrot with OffsetX: %.15lf, OffsetY: %.15lf, Zoom: %.15lf", offset_x, offset_y, zoom);
 	
 	write_statusbar((gpointer)local_data, message);
 	on_stop_clicked((gpointer)local_data);
@@ -706,7 +707,6 @@ static void activate (GtkApplication *app, gpointer data)
 	GtkWidget *box_3; /* radio buttons */
 	GtkWidget *box_4; /* statusbar */
 	GtkWidget *separator1; /* separator for radio buttons */
-	GtkWidget *separator2; /* separator for statusbar */
 	GtkStyleContext *context;
 #if GTK_NEW
 	GtkStyleProvider *provider;
@@ -860,15 +860,10 @@ static void activate (GtkApplication *app, gpointer data)
 	g_signal_connect(local_data->input_offset_y, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
 	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
 	
-/* ---- create statusbar separator and new box ---- */
+/* ---- create statusbar and new box ---- */
 	
 	box_4 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_grid_attach(GTK_GRID(grid), box_4, 0, 14, 1, 1);
-	
-/* ---- seperator for statusbar ---- */
-	
-	separator2 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_start(GTK_BOX(box_4), separator2, FALSE, TRUE, 5);
 	
 /* ---- create statusbar ---- */
 	
