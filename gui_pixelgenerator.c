@@ -874,7 +874,7 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->id = gtk_statusbar_get_context_id(GTK_STATUSBAR(local_data->statusbar), "statusbar");
 	gtk_widget_set_name(local_data->statusbar, "style_statusbar");
 	context = gtk_widget_get_style_context(local_data->statusbar);
-	write_statusbar((gpointer)local_data, "Welcome to the GUI Mandelbrot Set Generator!");
+	write_statusbar((gpointer)local_data, "Welcome to the GUI Mandelbrot Set Generator! v"VERSION"");
 	
 /* ---- create a headerbar ---- */
 	
