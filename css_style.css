@@ -1,5 +1,4 @@
 window {
-	background-color: #333333;
 }
 
 /* In order to select the label using a name use gtk_widget_set_name() in the
@@ -13,5 +12,11 @@ window {
 	#color: #ffffff;
 	font-size: 14px;
 	font-family: "Arial";
+	font-weight: normal;
+}
+#style_statusbar
+{
+	font-size: 12px;
+	font-family: 'Areal';
 	font-weight: normal;
 }

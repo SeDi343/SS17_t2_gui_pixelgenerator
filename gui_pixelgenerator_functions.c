@@ -113,23 +113,22 @@ void about_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data)
 
 void help_dialog (GSimpleAction *action, GVariant *parameter, gpointer data)
 {
-	const gchar *name;
+/*	const gchar *name;*/
 	GtkWidget *dialog;
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 
-	name = g_action_get_name(G_ACTION(action));
+/*	name = g_action_get_name(G_ACTION(action));*/
 	dialog = gtk_message_dialog_new(GTK_WINDOW(local_data->window),
 					GTK_DIALOG_DESTROY_WITH_PARENT,
 					GTK_MESSAGE_INFO,
 					GTK_BUTTONS_CLOSE,
-					"HELPDESK for GUI Mandelbrot Generator\n"
-					"\n"
-					"A simple GUI Mandelbrot Generator for GTK\n"
-					"Use iterations, offset and zoom for a user defined picture output\n"
+					"HELPDESK for GUI Mandelbrot Generator (BETA SCREEN)\n\n"
+					"A simple GUI Mandelbrot Generator for GTK\n\n"
+					"Use iterations, offset and zoom for a user defined picture output\n\n"
 					"Use the GENERATE button to calculate a new picture\n"
 					"Use the SAVE PICTURE button to save the picture into the program folder\n"
-					"Use the .ppm extension if you want, it's not recommended\n"
+					"Use the .ppm extension if you want, it's not recommended\n\n"
 					"Use the CLEAR button to reset the user input\n"
 					"Use the SETTINGS button to access to the About Dialog, Help Dialog or to Quit the Application\n",
 					NULL);

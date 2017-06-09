@@ -38,6 +38,7 @@
  *          Rev.: 19, 01.06.2017 - Adding information into status bar / picture
  *                                 generated with offset and zoom
  *          Rev.: 20, 08.06.2017 - Adding menu
+ *          Rev.: 21, 09.06.2017 - Added spinner and colormapping
  *
  * \information Create Flow box for colors & statusbar done & menu done
  *              Use Color Chooser or Flow Box / save picture function no dialog
@@ -59,6 +60,26 @@ const GActionEntry app_actions[] = {
 	{"about", about_callback},
 	{"help", help_callback}
 };
+
+/*------------------------------------------------------------------*/
+/* S P I N N E R   O N   F U N C T I O N                            */
+/*------------------------------------------------------------------*/
+static void on_play_clicked(gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	gtk_spinner_start(GTK_SPINNER(local_data->spinner));
+}
+
+/*------------------------------------------------------------------*/
+/* S P I N N E R   O F F   F U N C T I O N                          */
+/*------------------------------------------------------------------*/
+static void on_stop_clicked(gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	gtk_spinner_stop(GTK_SPINNER(local_data->spinner));
+}
 
 /*------------------------------------------------------------------*/
 /* C R E A T E   M E N U   F U N C T I O N                          */
@@ -291,7 +312,7 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(content_area), 10);
 	
 	label = gtk_label_new("Enter filename and click Save ...");
-	gtk_widget_set_name(label, "style_output");
+	gtk_widget_set_name(label, "style_statusbar");
 	gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
 	
 	local_data->input_filename = gtk_entry_new();
@@ -325,6 +346,47 @@ static void clr_clicked (GtkWidget *widget, gpointer data)
 }
 
 /*------------------------------------------------------------------*/
+/* C O L O R M A P P I N G   F U N C T I O N                        */
+/*------------------------------------------------------------------*/
+static void colormapping (GtkWidget *widget, gpointer data)
+{
+	gboolean radio[BUTTON_AMMOUNT];
+	gint i;
+	
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+/* ---- get radio button into local values ---- */
+	
+	for (i = 0; i < BUTTON_AMMOUNT; i++)
+	{
+		radio[i] = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(local_data->color_radio[i]));
+	}
+	
+	if (radio[0] == TRUE || radio[1] == TRUE || radio[2] == TRUE || radio[3] == TRUE)
+	{
+		if (radio[0] == TRUE)
+		{
+			local_data->colormapping = 0;
+		}
+		
+		if (radio[1] == TRUE)
+		{
+			local_data->colormapping = 1;
+		}
+		
+		if (radio[2] == TRUE)
+		{
+			local_data->colormapping = 2;
+		}
+		
+		if (radio[3] == TRUE)
+		{
+			local_data->colormapping = 3;
+		}
+	}
+}
+
+/*------------------------------------------------------------------*/
 /* C A L C U L A T E   F U N C T I O N                              */
 /*------------------------------------------------------------------*/
 static void calculation (GtkWidget *widget, gpointer data)
@@ -338,7 +400,9 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gdouble offset_x;
 	gdouble offset_y;
 	gdouble zoom;
-	gdouble color = 256;
+	gdouble colorr = 256;
+	gdouble colorg = 256;
+	gdouble colorb = 256;
 	gdouble width = WIDTH;
 	gdouble height = HEIGHT;
 	
@@ -398,9 +462,41 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	message = g_malloc(sizeof(gchar) * 5000);
 	
-/* ---- write into statusbar ---- */
+/* ---- colormapping ---- */
 	
-	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
+	switch (local_data->colormapping)
+	{
+		case 0: /*default colormapping */
+			colorr = 256;
+			colorg = 256;
+			colorb = 256;
+			break;
+			
+		case 1: /* red colormapping */
+			colorr = 256;
+			colorg = 0;
+			colorb = 0;
+			break;
+		
+		case 2: /* green colormapping */
+			colorr = 0;
+			colorg = 256;
+			colorb = 0;
+			break;
+		
+		case 3: /* blue colormapping */
+			colorr = 0;
+			colorg = 0;
+			colorb = 256;
+			break;
+			
+		default: /*default colormapping in case of error */
+			colorr = 256;
+			colorg = 256;
+			colorb = 256;
+			g_printf("WARNING: No information from radio buttons\n");
+			break;
+	}
 	
 /* ---- fill variables from buffer ---- */
 	
@@ -459,9 +555,9 @@ static void calculation (GtkWidget *widget, gpointer data)
 			{
 				z = sqrt(newRe * newRe + newIm * newIm);
 				
-				(local_data->pixel_pointer+k)->r = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				(local_data->pixel_pointer+k)->g = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				(local_data->pixel_pointer+k)->b = llround(color * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(local_data->pixel_pointer+k)->r = llround(colorr * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(local_data->pixel_pointer+k)->g = llround(colorg * log2(1.75 + i - log2(log2(z))) / log2(iterations));
+				(local_data->pixel_pointer+k)->b = llround(colorb * log2(1.75 + i - log2(log2(z))) / log2(iterations));
 				
 				if ((local_data->pixel_pointer+k)->r < 0)
 				{
@@ -551,6 +647,22 @@ static void calculation (GtkWidget *widget, gpointer data)
 	g_snprintf(message, sizeof(gchar)*5000, "Generated Mandelbrot with OffsetX: %lf, OffsetY: %lf, Zoom: %lf", offset_x, offset_y, zoom);
 	
 	write_statusbar((gpointer)local_data, message);
+	on_stop_clicked((gpointer)local_data);
+}
+
+/*------------------------------------------------------------------*/
+/* P R E C A L C U L A T I O N   F U N C T I O N                    */
+/*------------------------------------------------------------------*/
+static void precalculation (GtkWidget *widget, gpointer data)
+{
+	struct my_widgets *local_data = (struct my_widgets *)data;
+	
+	g_printf("Should print and activate spinner\n");
+	on_play_clicked((gpointer)local_data);
+	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
+	g_printf("Should have printed and activated spinner\n");
+	
+	calculation(NULL, (gpointer)local_data);
 }
 
 /*------------------------------------------------------------------*/
@@ -583,8 +695,10 @@ static void activate (GtkApplication *app, gpointer data)
 	GtkWidget *clr_button, *generate_button; /* ok and generate buttons */
 	GtkWidget *save_button; /* save button */
 	GtkWidget *box_2; /* buttons */
-	GtkWidget *box_3; /* statusbar */
-	GtkWidget *separator;
+	GtkWidget *box_3; /* radio buttons */
+	GtkWidget *box_4; /* statusbar */
+	GtkWidget *separator1; /* separator for radio buttons */
+	GtkWidget *separator2; /* separator for statusbar */
 	GtkStyleContext *context;
 #if GTK_NEW
 	GtkStyleProvider *provider;
@@ -594,6 +708,8 @@ static void activate (GtkApplication *app, gpointer data)
 	GdkDisplay *display;
 	GdkScreen *screen;
 #endif
+	
+	gint i;
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
@@ -623,8 +739,7 @@ static void activate (GtkApplication *app, gpointer data)
 	local_data->box_1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_grid_attach(GTK_GRID(grid), local_data->box_1, 0, 0, 1, 1);
 	
-	separator = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
-	gtk_box_pack_end(GTK_BOX(local_data->box_1), separator, FALSE, TRUE, 0);
+/* ---- load image ---- */
 	
 	local_data->image = gtk_image_new_from_file(".out.ppm");
 	gtk_box_pack_start(GTK_BOX(local_data->box_1), local_data->image, FALSE, FALSE, 0);
@@ -692,21 +807,56 @@ static void activate (GtkApplication *app, gpointer data)
 	gtk_entry_set_text(GTK_ENTRY(local_data->input_offset_y), "0");
 	gtk_entry_set_text(GTK_ENTRY(local_data->input_zoom), "1");
 	
+/* ---- seperator for radio buttons ---- */
+	
+	separator1 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_grid_attach(GTK_GRID(grid_settings), separator1, 0, 13, 1, 1);
+	
+/* ---- Radio buttons for color mapping ---- */
+	
+	box_3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_grid_attach(GTK_GRID(grid_settings), box_3, 0, 14, 4, 2);
+	
+	local_data->color_radio[0] = gtk_radio_button_new_with_label(NULL, "Default");
+	local_data->color_radio[1] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "Red");
+	local_data->color_radio[2] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "Green");
+	local_data->color_radio[3] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "Blue");
+	
+	for (i = 0; i < BUTTON_AMMOUNT; i++)
+	{
+		gtk_box_pack_start(GTK_BOX(box_3), local_data->color_radio[i], FALSE, TRUE, 0);
+	}
+	
+	for (i = 0; i < BUTTON_AMMOUNT; i++)
+	{
+		g_signal_connect(G_OBJECT(local_data->color_radio[i]), "toggled", G_CALLBACK(colormapping), (gpointer)local_data);
+	}
+	
+	for (i = 0; i < BUTTON_AMMOUNT; i++)
+	{
+		gtk_widget_set_sensitive(GTK_WIDGET(local_data->color_radio[i]), TRUE);
+	}
+	
 /* ---- connect a signal when ENTER is hit within the entry box ---- */
 	
-	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(calculation), (gpointer)local_data);
-	g_signal_connect(local_data->input_iterations, "activate", G_CALLBACK(calculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_zoom, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
+	g_signal_connect(local_data->input_iterations, "activate", G_CALLBACK(precalculation), (gpointer)local_data);
 	
 /* ---- create statusbar separator and new box ---- */
 	
-	box_3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	gtk_grid_attach(GTK_GRID(grid), box_3, 0, 14, 1, 1);
+	box_4 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+	gtk_grid_attach(GTK_GRID(grid), box_4, 0, 14, 1, 1);
+	
+/* ---- seperator for statusbar ---- */
+	
+	separator2 = gtk_separator_new(GTK_ORIENTATION_HORIZONTAL);
+	gtk_box_pack_start(GTK_BOX(box_4), separator2, FALSE, TRUE, 5);
 	
 	local_data->statusbar = gtk_statusbar_new();
 	gtk_widget_set_size_request(local_data->statusbar, 300, 10);
-	gtk_box_pack_start(GTK_BOX(box_3), local_data->statusbar, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(box_4), local_data->statusbar, FALSE, FALSE, 0);
 	local_data->id = gtk_statusbar_get_context_id(GTK_STATUSBAR(local_data->statusbar), "statusbar");
-	gtk_widget_set_name(local_data->statusbar, "style_output");
+	gtk_widget_set_name(local_data->statusbar, "style_statusbar");
 	context = gtk_widget_get_style_context(local_data->statusbar);
 	
 /* ---- create a headerbar ---- */
@@ -745,7 +895,12 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- connect a signal when the GENERATE button is clicked ---- */
 	
-	g_signal_connect(generate_button, "clicked", G_CALLBACK(calculation), (gpointer)local_data);
+	g_signal_connect(generate_button, "clicked", G_CALLBACK(precalculation), (gpointer)local_data);
+	
+/* ---- create a spinner for calculation ---- */
+	
+	local_data->spinner = gtk_spinner_new();
+	gtk_header_bar_pack_end(GTK_HEADER_BAR(local_data->headerbar), local_data->spinner);
 	
 /* ---- put save button to the right side of the header bar ---- */
 	
@@ -779,16 +934,21 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
 	gtk_css_provider_load_from_data(GTK_CSS_PROVIDER(provider),
-/*								"GtkWindow {\n"*/
-/*								"   background-color: #333333;\n"*/
-/*								"}\n"*/
+								"GtkWindow {\n"
+								"}\n"
 								"#style_output\n"
 								"{\n"
-/*								"   color: #ffffff;\n"*/
-								"   font-size: 14px;\n"
-								"   font-family: 'Arial';\n"
-								"   font-weight: normal;\n"
-								"}\n", -1, NULL);
+								"	font-size: 14px;\n"
+								"	font-family: 'Arial';\n"
+								"	font-weight: normal;\n"
+								"}\n"
+								"#style_statusbar\n"
+								"{\n"
+								"	font-size: 12px;\n"
+								"	font-family: 'Areal';\n"
+								"	font-weight: normal;\n"
+								"}\n",
+								-1, NULL);
 	g_object_unref(provider);
 #endif
 	

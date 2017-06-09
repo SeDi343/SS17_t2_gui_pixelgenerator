@@ -9,6 +9,8 @@
  *          Rev.: 03, 01.06.2017 - Added statusbar and id to struct
  *          Rev.: 04, 08.06.2017 - Adding library and function declarations for
  *                                 menu
+ *          Rev.: 05, 09.06.2017 - Added new library and removed a define and
+ *                                 new Widgets for colormapping and spinner
  *
  * \information
  *
@@ -22,6 +24,7 @@
 #include <gtk/gtk.h>
 #include <glib/gprintf.h>
 #include <gdk/gdkkeysyms.h>
+#include <glib/gi18n.h>
 
 /* ---- STANDARD LIBRARS ---- */
 
@@ -69,8 +72,7 @@
 #define WIDTH 800
 
 #define STRINGLENGTH 500
-
-#define _(string) gettext (string)
+#define BUTTON_AMMOUNT 4
 
 
 struct picture_pointer
@@ -95,8 +97,11 @@ struct my_widgets
 	GtkWidget *save_label; /* Label for saveimage */
 	GtkWidget *statusbar; /* Statusbar for stauts */
 	GtkWidget *headerbar; /* headerbar */
+	GtkWidget *color_radio[BUTTON_AMMOUNT]; /* radio buttons for color */
+	GtkWidget *spinner; /* spinner for statusbar */
 	guint id; /* requested for statusbar */
 	gint calculation; /* value if calculation was present or not */
+	gint colormapping; /* value for colormapping */
 	struct picture_pointer *pixel_pointer; /* pixel pointer */
 };
 
