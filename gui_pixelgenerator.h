@@ -74,6 +74,7 @@
 #define STRINGLENGTH 500
 #define BUTTON_AMMOUNT 4
 
+#define VERSION "1.0"
 
 struct picture_pointer
 {

@@ -96,7 +96,7 @@ void about_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data)
 	pixbuf = gdk_pixbuf_new_from_file("icon_small.jpg", NULL);
 	gtk_show_about_dialog(GTK_WINDOW(local_data->window),
 								"program-name", "GUI Mandelbrot Generator",
-								"version", "1.0",
+								"version", VERSION,
 								"copyright", "Copyright \xc2\xa9 Dichler Sebastian",
 								"license-type", GTK_LICENSE_LGPL_3_0,
 								"website", "http://popeyesblog.eu",
