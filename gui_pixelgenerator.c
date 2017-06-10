@@ -42,6 +42,8 @@
  *          Rev.: 22, 09.06.2017 - Changed Font from Arial to Ubuntu
  *          Rev.: 23, 09.06.2017 - Added welcome message and border width
  *          Rev.: 24, 09.06.2017 - Removed Unused style resource
+ *          Rev.: 25, 10.06.2017 - Added prevent freeeze function into calculation
+ *                                 due to high iterations freeezing
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
