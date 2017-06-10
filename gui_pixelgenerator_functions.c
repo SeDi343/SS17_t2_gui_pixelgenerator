@@ -128,8 +128,8 @@ void help_dialog (GSimpleAction *action, GVariant *parameter, gpointer data)
 					"Use the SAVE PICTURE button to save the picture into the program folder\n"
 					"Use the .ppm extension if you want, it's not recommended\n\n"
 					"Use the CLEAR button to reset the user input\n"
-					"Use the SETTINGS button to access to the About Dialog, Help Dialog or to Quit the Application\n",
-					NULL);
+					"Use the SETTINGS button to access to the About Dialog, Help Dialog or to Quit the Application\n");
+	gtk_widget_set_name(dialog, "style_dialog");
 	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 	gtk_widget_show (dialog);
 }

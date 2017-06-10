@@ -322,7 +322,7 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 	gtk_container_set_border_width(GTK_CONTAINER(content_area), 10);
 	
 	label = gtk_label_new("Enter filename and click Save ...");
-	gtk_widget_set_name(label, "style_statusbar");
+	gtk_widget_set_name(label, "style_dialog");
 	gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
 	
 	local_data->input_filename = gtk_entry_new();
@@ -603,6 +603,13 @@ static void calculation (GtkWidget *widget, gpointer data)
 			}
 			
 			k++;
+			
+/* ---- prevent freeze of window with high iterations ---- */
+			
+			while(gdk_events_pending())
+			{
+				gtk_main_iteration();
+			}
 		}
 	}
 	
@@ -955,6 +962,12 @@ static void activate (GtkApplication *app, gpointer data)
 								"#style_statusbar\n"
 								"{\n"
 								"	font-size: 12px;\n"
+								"	font-family: 'Ubuntu';\n"
+								"	font-weight: normal;\n"
+								"}\n"
+								"#style_dialog\n"
+								"{\n"
+								"	font-size: 11px;\n"
 								"	font-family: 'Ubuntu';\n"
 								"	font-weight: normal;\n"
 								"}\n",
