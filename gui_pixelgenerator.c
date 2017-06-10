@@ -44,6 +44,8 @@
  *          Rev.: 24, 09.06.2017 - Removed Unused style resource
  *          Rev.: 25, 10.06.2017 - Added prevent freeeze function into calculation
  *                                 due to high iterations freeezing
+ *          Rev.: 26, 11.06.2017 - Moved the default value of calculation and 
+ *                                 colormapping to main()
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
@@ -732,10 +734,6 @@ static void activate (GtkApplication *app, gpointer data)
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
-/* ---- set the calculation value for save image to 0 ---- */
-	
-	local_data->calculation = 0;
-	
 /* ---- create the window and associate an icon ---- */
 	
 	local_data->window = gtk_application_window_new(local_data->app);
@@ -1016,6 +1014,11 @@ int main (int argc, char *argv[])
 		local_data = NULL;
 		exit(EXIT_FAILURE);
 	}
+	
+/* ---- set the default values to 0 first to initialize them ---- */
+	
+	local_data->calculation = 0;
+	local_data->colormapping = 0;
 	
 /* ---- create a threaded application ---- */
 	
