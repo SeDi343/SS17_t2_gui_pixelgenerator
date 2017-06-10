@@ -606,7 +606,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 			
 /* ---- prevent freeze of window with high iterations ---- */
 			
-			while(gdk_events_pending())
+			if (gdk_events_pending())
 			{
 				gtk_main_iteration();
 			}
