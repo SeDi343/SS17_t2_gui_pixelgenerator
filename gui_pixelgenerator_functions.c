@@ -145,6 +145,9 @@ void quit_callback (GSimpleAction *action, GVariant *parameter, gpointer data)
 	g_print("Quit was clicked ...\n");
 #endif
 	
+/* We dont need to free the pointers due to the g_application_quit function,
+ * it goes back to the main function and frees them in the main function */
+	
 	g_application_quit(G_APPLICATION(local_data->app));
 }
 
