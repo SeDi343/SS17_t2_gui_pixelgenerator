@@ -51,6 +51,7 @@
  *          Rev.: 28, 13.06.2017 - Added default saveimage entry (picture.ppm)
  *          Rev.: 29, 13.06.2017 - Moved gtk_main_iteration() function to refresh
  *                                 window every row of calculation
+ *          Rev.: 30, 13.06.2017 - Changed statusbar style to bold font
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
@@ -966,7 +967,7 @@ static void activate (GtkApplication *app, gpointer data)
 								"{\n"
 								"	font-size: 12px;\n"
 								"	font-family: 'Ubuntu';\n"
-								"	font-weight: normal;\n"
+								"	font-weight: bold;\n"
 								"}\n"
 								"#style_dialog\n"
 								"{\n"
