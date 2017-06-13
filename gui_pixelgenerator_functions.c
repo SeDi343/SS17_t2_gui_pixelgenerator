@@ -99,7 +99,7 @@ void about_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data)
 								"version", VERSION,
 								"copyright", "Copyright \xc2\xa9 Dichler Sebastian",
 								"license-type", GTK_LICENSE_LGPL_3_0,
-								"website", "http://popeyesblog.eu",
+								"website", "https://github.com/SeDi343",
 								"comments", "GUI Task | Mandelbrot Generator",
 								"authors", authors,
 								"documenters", documenters,

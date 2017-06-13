@@ -48,6 +48,9 @@
  *                                 colormapping to main()
  *          Rev.: 27, 13.06.2017 - Removed some g_print and first steps for a
  *                                 threaded calculation researched
+ *          Rev.: 28, 13.06.2017 - Added default saveimage entry (picture.ppm)
+ *          Rev.: 29, 13.06.2017 - Moved gtk_main_iteration() function to refresh
+ *                                 window every row of calculation
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
@@ -333,6 +336,7 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 	
 	local_data->input_filename = gtk_entry_new();
 	gtk_grid_attach(GTK_GRID(grid), local_data->input_filename, 0, 1, 1, 1);
+	gtk_entry_set_text(GTK_ENTRY(local_data->input_filename), "picture.ppm");
 	
 /* ---- show dialog message ---- */
 	
@@ -609,14 +613,11 @@ static void calculation (GtkWidget *widget, gpointer data)
 			}
 			
 			k++;
-			
-/* ---- prevent freeze of window with high iterations ---- */
-			
-			if (gdk_events_pending())
-			{
-				gtk_main_iteration();
-			}
 		}
+	
+/* ---- prevent freeze of window with high iterations ---- */
+	
+	gtk_main_iteration();
 	}
 	
 #if DEBUG
@@ -685,6 +686,7 @@ static void precalculation (GtkWidget *widget, gpointer data)
 	on_play_clicked((gpointer)local_data);
 	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
 	
+	gtk_main_iteration();
 	calculation(NULL, (gpointer)local_data);
 }
 
@@ -943,7 +945,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 #if GTK_NEW
 	provider = GTK_STYLE_PROVIDER(gtk_css_provider_new());
-	gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider), "/css_greeter/css_style.css");
+	gtk_css_provider_load_from_resource(GTK_CSS_PROVIDER(provider), "/css_style/css_style.css");
 	apply_css(local_data->window, provider);
 #endif
 	
