@@ -113,7 +113,7 @@ static void construct_menu (GtkApplication *app, GtkWidget *box, gpointer data)
 	
 /* ---- keyboard accelerators ---- */
 	
-	const gchar *quit_accels[2] = {"<Ctrl>Q", NULL};
+	const gchar *quit_accels[2] = {"<Ctrl>C", NULL};
 	const gchar *help_accels[2] = {"F1", NULL};
 	const gchar *about_accels[2] = {"<Ctrl>A", NULL};
 	
@@ -533,8 +533,8 @@ static void calculation (GtkWidget *widget, gpointer data)
 	g_printf("offset_x"BOLD ITALIC" %lf "RESET, offset_x);
 	g_printf("offset_y"BOLD ITALIC" %lf "RESET, offset_y);
 	g_printf("zoom"BOLD ITALIC" %lf\t"RESET, zoom);
-	g_printf("height"BOLD ITALIC" %.0lf "RESET, height);
-	g_printf("width"BOLD ITALIC" %.0lf\n"RESET, width);
+	g_printf("width"BOLD ITALIC" %.0lf "RESET, width);
+	g_printf("height"BOLD ITALIC" %.0lf\n"RESET, height);
 #endif
 	
 /* ---- generate mandelbrot set with current settings ---- */
