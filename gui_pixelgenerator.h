@@ -65,7 +65,7 @@
 #define ITALIC        "\033[3m"              /* Italic Mode */
 
 #define DEBUG 1
-#define GTK_OLD 1
+#define GTK_OLD 0
 #define GTK_NEW !GTK_OLD
 
 #define HEIGHT 600
@@ -73,7 +73,7 @@
 
 #define STRINGLENGTH 500
 #define BUTTON_AMMOUNT 4
-#define N_THREADS 1 /* for threaded calculation (for later version) */
+//#define N_THREADS 1 /* for threaded calculation (for later version) */
 
 #define VERSION "1.2"
 
@@ -88,7 +88,7 @@ struct my_widgets
 {
 	GtkApplication *app; /* Application */
 	GtkWidget *window; /* main window */
-	GThread *thread[N_THREADS]; /* for threaded calculation (for later version) */
+//	GThread *thread[N_THREADS]; /* for threaded calculation (for later version) */
 	GtkWidget *image; /* mandelbrot image */
 	GtkWidget *input_iterations; /* input iteratoins */
 	GtkWidget *input_offset_x; /* input offset x */
