@@ -46,6 +46,8 @@
  *                                 due to high iterations freeezing
  *          Rev.: 26, 11.06.2017 - Moved the default value of calculation and 
  *                                 colormapping to main()
+ *          Rev.: 27, 13.06.2017 - Removed some g_print and first steps for a
+ *                                 threaded calculation researched
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
@@ -680,10 +682,9 @@ static void precalculation (GtkWidget *widget, gpointer data)
 {
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
-	g_printf("Should print and activate spinner\n");
 	on_play_clicked((gpointer)local_data);
 	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
-	g_printf("Should have printed and activated spinner\n");
+	
 	calculation(NULL, (gpointer)local_data);
 }
 

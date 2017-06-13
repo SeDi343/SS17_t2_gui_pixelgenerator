@@ -73,6 +73,7 @@
 
 #define STRINGLENGTH 500
 #define BUTTON_AMMOUNT 4
+#define N_THREADS 1 /* for threaded calculation (for later version) */
 
 #define VERSION "1.0"
 
@@ -87,6 +88,7 @@ struct my_widgets
 {
 	GtkApplication *app; /* Application */
 	GtkWidget *window; /* main window */
+	GThread *thread[N_THREADS]; /* for threaded calculation (for later version) */
 	GtkWidget *image; /* mandelbrot image */
 	GtkWidget *input_iterations; /* input iteratoins */
 	GtkWidget *input_offset_x; /* input offset x */
