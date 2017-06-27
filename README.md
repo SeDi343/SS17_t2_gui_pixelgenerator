@@ -7,5 +7,6 @@ Iterations:      Number of Calculations
 Offset X:        The offset on x axis
 Offset Y:        The offset on y axis
 Zoomfactor:      Zoom
-Colortemplate:   The color template can be gray, red, green or blue
+Colortemplate:   The color template can be SINUS, PT1 and LINEAR with cyan, red,  
+                 green and blue
 </pre>
