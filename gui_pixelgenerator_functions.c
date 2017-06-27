@@ -11,6 +11,7 @@
  *                                 to write given string into statusbar
  *          Rev.: 05, 14.06.2017 - Added dialogs some days ago and changed
  *                                 help_dialog output
+ *          Rev.: 06, 27.06.2017 - Added the ability to use E as input
  *
  * \information
  *
@@ -34,7 +35,7 @@ int check_number (char *number)
 /*		return 1;*/
 /*	}*/
 	
-	if (isdigit(number[0]) == 0 && number[0] != '-')
+	if (isdigit(number[0]) == 0 && number[0] != '-' && number[0] != 'E')
 	{
 		printf(BOLD"ERROR: Not a number\n"RESET);
 		return 1;
@@ -51,7 +52,7 @@ int check_number (char *number)
 	
 	for (i = 1; i < strnlen(number, STRINGLENGTH); i++)
 	{
-		if (isdigit(number[i]) == 0 && number[i] != ',')
+		if (isdigit(number[i]) == 0 && number[i] != ',' && number[i] != 'E')
 		{
 			printf(BOLD"ERROR: Not a number\n"RESET);
 			return 1;
