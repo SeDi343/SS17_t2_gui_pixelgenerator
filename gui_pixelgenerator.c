@@ -52,15 +52,17 @@
  *          Rev.: 29, 13.06.2017 - Moved gtk_main_iteration() function to refresh
  *                                 window every row of calculation
  *          Rev.: 30, 13.06.2017 - Changed statusbar style to bold font
+ *          Rev.: 31, 14.06.2017 - Added several returnvalue checks
+ *          Rev.: 32, 27.06.2017 - Changed full calculate function to Helmuts
+ *                                 method
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
  *
- *              for some reasons the function on_play_clicked and write_statusbar
- *              are not working in the precalculation function but g_printf does
- *
  *              will edit the mandelbrot algorithm and color mapping method
  *              with Helmut -> add him to the authors, documenters
+ *
+ *              Use GtkFileChooserDialog instead of complex save function
  *
  */
 
@@ -153,6 +155,7 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 	gdouble width = WIDTH;
 	gchar *local_filename;
 	gchar *systemcall;
+	gint rv;
 	
 	gint i;
 	gint error;
@@ -186,17 +189,37 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 			exit(EXIT_FAILURE);
 		}
 		
-		fprintf(pFout, "P3\n");
-		fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
-		fprintf(pFout, "255\n");
-		fprintf(pFout, "#Generated with GUI Mandelbrot Generator\n");
+		rv = fprintf(pFout, "P3\n");
+		if (rv < 3)
+		{
+			g_print(BOLD"WARNING: writing file: Can't write 1st line"RESET);
+		}
+		rv = fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
+		if (rv < 4)
+		{
+			g_print(BOLD"WARNING: writing file: Can't write 2nd line"RESET);
+		}
+		rv = fprintf(pFout, "255\n");
+		if (rv < 4)
+		{
+			g_print(BOLD"WARNING: writing file: Can't write 3rd line"RESET);
+		}
+		rv = fprintf(pFout, "#Generated with GUI Mandelbrot Generator\n");
+		if (rv < 41)
+		{
+			g_print(BOLD"WARNING: writing file: Can't write 4th line"RESET);
+		}
 		
 		for (i = 0; i < height*width; i++)
 		{
-			fprintf(pFout, "%u %u %u\n",
+			rv = fprintf(pFout, "%u %u %u\n",
 								(local_data->pixel_pointer+i)->r,
 								(local_data->pixel_pointer+i)->g,
 								(local_data->pixel_pointer+i)->b);
+			if (rv < 6)
+			{
+				g_print(BOLD"WARNING: writing file: Can't write %dth line"RESET, i+5);
+			}
 		}
 		
 		error = fclose(pFout);
@@ -385,26 +408,80 @@ static void colormapping (GtkWidget *widget, gpointer data)
 	
 /* ---- change colormapping variable for choosen color ---- */
 	
-	if (radio[0] == TRUE || radio[1] == TRUE || radio[2] == TRUE || radio[3] == TRUE)
+	if (radio[0] == TRUE || radio[1] == TRUE || radio[2] == TRUE || radio[3] == TRUE ||
+		radio[4] == TRUE || radio[5] == TRUE || radio[6] == TRUE || radio[7] == TRUE ||
+		radio[8] == TRUE || radio[9] == TRUE || radio[10] == TRUE || radio[11] == TRUE)
 	{
 		if (radio[0] == TRUE)
 		{
 			local_data->colormapping = 0;
+			local_data->offsetRGB = 50;
 		}
 		
 		if (radio[1] == TRUE)
 		{
 			local_data->colormapping = 1;
+			local_data->offsetRGB = 50;
 		}
 		
 		if (radio[2] == TRUE)
 		{
 			local_data->colormapping = 2;
+			local_data->offsetRGB = 50;
 		}
 		
 		if (radio[3] == TRUE)
 		{
 			local_data->colormapping = 3;
+			local_data->offsetRGB = 50;
+		}
+		
+		if (radio[4] == TRUE)
+		{
+			local_data->colormapping = 4;
+			local_data->offsetRGB = 125;
+		}
+		
+		if (radio[5] == TRUE)
+		{
+			local_data->colormapping = 5;
+			local_data->offsetRGB = 125;
+		}
+		
+		if (radio[6] == TRUE)
+		{
+			local_data->colormapping = 6;
+			local_data->offsetRGB = 125;
+		}
+		
+		if (radio[7] == TRUE)
+		{
+			local_data->colormapping = 7;
+			local_data->offsetRGB = 125;
+		}
+		
+		if (radio[8] == TRUE)
+		{
+			local_data->colormapping = 8;
+			local_data->offsetRGB = 7;
+		}
+		
+		if (radio[9] == TRUE)
+		{
+			local_data->colormapping = 9;
+			local_data->offsetRGB = 7;
+		}
+		
+		if (radio[10] == TRUE)
+		{
+			local_data->colormapping = 10;
+			local_data->offsetRGB = 7;
+		}
+		
+		if (radio[11] == TRUE)
+		{
+			local_data->colormapping = 11;
+			local_data->offsetRGB = 7;
 		}
 	}
 }
@@ -423,19 +500,17 @@ static void calculation (GtkWidget *widget, gpointer data)
 	gdouble offset_x;
 	gdouble offset_y;
 	gdouble zoom;
-	gdouble colorr;
-	gdouble colorg;
-	gdouble colorb;
 	gdouble width = WIDTH;
 	gdouble height = HEIGHT;
 	
-	gint x, y;
-	gdouble pr, pi;
-	gdouble newRe, oldRe, newIm, oldIm;
+	unsigned char **colorMapEasy;
+	gdouble temp = 0.0;
+	unsigned char value;
 	
-	gdouble z;
+	gint xIterate = 0, yIterate = 0, iteration = 0, pixelCounter = 0;
+	gdouble realPart = 0.0, imagPart = 0.0, x = 0.0, y = 0.0, xNew = 0.0;
 	
-	gint i, k;
+	gint i, rv;
 	gint error = 0;
 	gchar *pEnd;
 	gchar *message;
@@ -485,48 +560,176 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	message = g_malloc(sizeof(gchar) * 5000);
 	
-/* ---- colormapping ---- */
-	
-	switch (local_data->colormapping)
-	{
-		case 0: /*default colormapping */
-			colorr = 256;
-			colorg = 256;
-			colorb = 256;
-			break;
-			
-		case 1: /* red colormapping */
-			colorr = 256;
-			colorg = 0;
-			colorb = 0;
-			break;
-		
-		case 2: /* green colormapping */
-			colorr = 0;
-			colorg = 256;
-			colorb = 0;
-			break;
-		
-		case 3: /* blue colormapping */
-			colorr = 0;
-			colorg = 0;
-			colorb = 256;
-			break;
-			
-		default: /*default colormapping in case of error reading radio buttons */
-			colorr = 256;
-			colorg = 256;
-			colorb = 256;
-			g_printf("WARNING: No information from radio buttons\n");
-			break;
-	}
-	
 /* ---- fill variables from buffer ---- */
 	
-	iterations = strtod(buffer1, &pEnd);
+	iterations = (int)(strtod(buffer1, &pEnd));
 	offset_x = strtod(buffer2, &pEnd);
 	offset_y = strtod(buffer3, &pEnd);
 	zoom = strtod(buffer4, &pEnd);
+	
+/* ---- allocate memory for the colormapping ---- */
+	
+	colorMapEasy = (unsigned char **)calloc(iterations, sizeof(unsigned char *));
+	if (colorMapEasy == NULL)
+	{
+		perror("ERROR calloc colorMapEasy");
+		g_free(local_data->pixel_pointer);
+		g_free(local_data);
+		exit(EXIT_FAILURE);
+	}
+	for (int i = 0; i < iterations; i++)
+	{
+		colorMapEasy[i] = (unsigned char *)calloc(3, sizeof(unsigned char));
+		if(colorMapEasy[i] == NULL)
+		{
+			perror("ERROR calloc colorMapEasy[i]");
+			g_free(local_data->pixel_pointer);
+			g_free(local_data);
+			g_free(colorMapEasy);
+			exit(EXIT_FAILURE);
+		}
+	}
+	
+/* ---- calculate the colormapping ---- */
+	
+	for(i = 0; i < iterations; i++)
+	{
+		switch (local_data->colormapping)
+		{
+			case 0: /* SIN: cyan colormapping */
+				temp = llround(255.0/2.0*sin(i/(local_data->offsetRGB)-1.57079632679)+255.0/2.0);
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = value;
+				colorMapEasy[i][2] = value;
+			break;
+			
+			case 1: /* SIN: red colormapping */
+				temp = llround(255.0/2.0*sin(i/(local_data->offsetRGB)-1.57079632679)+255.0/2.0);
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = value;
+				colorMapEasy[i][1] = 0;
+				colorMapEasy[i][2] = 0;
+			break;
+			
+			case 2: /* SIN: green colormapping */
+				temp = llround(255.0/2.0*sin(i/(local_data->offsetRGB)-1.57079632679)+255.0/2.0);
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = value;
+				colorMapEasy[i][2] = 0;
+			break;
+			
+			case 3: /* SIN: blue colormapping */
+				temp = llround(255.0/2.0*sin(i/(local_data->offsetRGB)-1.57079632679)+255.0/2.0);
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = 0;
+				colorMapEasy[i][2] = value;
+			break;
+			
+			case 4: /* PT1: cyan colormapping */
+				temp = llround(255.0 - 255.0 * exp(i / local_data->offsetRGB * (-1.0)));
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = value;
+				colorMapEasy[i][2] = value;
+			break;
+			
+			case 5: /* PT1: red colormapping */
+				temp = llround(255.0 - 255.0 * exp(i / local_data->offsetRGB * (-1.0)));
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = value;
+				colorMapEasy[i][1] = 0;
+				colorMapEasy[i][2] = 0;
+			break;
+			
+			case 6: /* PT1: green colormapping */
+				temp = llround(255.0 - 255.0 * exp(i / local_data->offsetRGB * (-1.0)));
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = value;
+				colorMapEasy[i][2] = 0;
+			break;
+			
+			case 7: /* PT1: blue colormapping */
+				temp = llround(255.0 - 255.0 * exp(i / local_data->offsetRGB * (-1.0)));
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = 0;
+				colorMapEasy[i][2] = value;
+			break;
+			
+			case 8: /* LINEAR: cyan colormapping */
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = i * local_data->offsetRGB;
+				colorMapEasy[i][2] = i * local_data->offsetRGB;
+			break;
+			
+			case 9: /* LINEAR: red colormapping */
+				colorMapEasy[i][0] = i * local_data->offsetRGB;
+				colorMapEasy[i][1] = 0;
+				colorMapEasy[i][2] = 0;
+			break;
+			
+			case 10: /* LINEAR: green colormapping */
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = i * local_data->offsetRGB;
+				colorMapEasy[i][2] = 0;
+			break;
+			
+			case 11: /* LINEAR: blue colormapping */
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = 0;
+				colorMapEasy[i][2] = i * local_data->offsetRGB;
+			break;
+			
+			default: /*default colormapping in case of error reading radio buttons */
+				temp = llround(255.0/2.0*sin(i/(local_data->offsetRGB)-1.57079632679)+255.0/2.0);
+				if (temp > 255.0)
+				{
+					temp = 255.0;
+				}
+				value = (unsigned char)temp;
+				colorMapEasy[i][0] = 0;
+				colorMapEasy[i][1] = value;
+				colorMapEasy[i][2] = value;
+				g_printf("WARNING: No information from radio buttons\n");
+			break;
+		}
+	}
 	
 #if DEBUG
 	g_printf("iterations"BOLD ITALIC" %.0lf "RESET, iterations);
@@ -543,83 +746,55 @@ static void calculation (GtkWidget *widget, gpointer data)
 	g_printf(BOLD"Calculating Mandelbrot Set\t"RESET);
 #endif
 	
-	k = 0;
-	
-	for (y = 0; y < height; y++)
+	for (xIterate = 0; xIterate < height; xIterate++)
 	{
-		for (x = 0; x < width; x++)
+		for (yIterate = 0; yIterate < width; yIterate++)
 		{
-			pr = (width/height) * (x - width / 2) / (0.5 * (1/zoom) * width) + offset_x;
-			pi = (y - height / 2) / (0.5 * (1/zoom) * height) - offset_y;
+			//realPart = (yIterate - width  / 2.0) * zoom + offset_x;
+			//imagPart = (xIterate - height / 2.0) * zoom + offset_y;
+			realPart = (width/height) * (yIterate - width / 2) / (0.5 * (1/zoom) * width) + offset_x;
+			imagPart = (xIterate - height / 2) / (0.5 * (1/zoom) * height) - offset_y;
 			
-			newRe = newIm = oldRe = oldIm = 0;
+			x = 0.0, y = 0.0;
+			iteration = 0;
 			
-			for (i = 0; i < iterations; i++)
+			while ((pow(x,2)+pow(y,2)) <= 4 && iteration < iterations)
 			{
-				oldRe = newRe;
-				oldIm = newIm;
-				
-				newRe = oldRe * oldRe - oldIm * oldIm + pr;
-				newIm = 2 * oldRe * oldIm + pi;
-				
-				if ((newRe * newRe + newIm * newIm) > 4)
-				{
-					break;
-				}
+				xNew = pow(x,2) - pow(y,2) + realPart;
+				y = 2.0*x*y + imagPart;
+				x = xNew;
+				iteration++;
 			}
 			
-			if (i == iterations)
+			if (iteration < iterations)
 			{
-				(local_data->pixel_pointer+k)->r = 0;
-				(local_data->pixel_pointer+k)->g = 0;
-				(local_data->pixel_pointer+k)->b = 0;
+				(local_data->pixel_pointer+pixelCounter)->r = colorMapEasy[iteration][0];
+				(local_data->pixel_pointer+pixelCounter)->g = colorMapEasy[iteration][1];
+				(local_data->pixel_pointer+pixelCounter)->b = colorMapEasy[iteration][2];
+			
 			}
 			else
 			{
-				z = sqrt(newRe * newRe + newIm * newIm);
-				
-				(local_data->pixel_pointer+k)->r = llround(colorr * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				(local_data->pixel_pointer+k)->g = llround(colorg * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				(local_data->pixel_pointer+k)->b = llround(colorb * log2(1.75 + i - log2(log2(z))) / log2(iterations));
-				
-				if ((local_data->pixel_pointer+k)->r < 0)
-				{
-					(local_data->pixel_pointer+k)->r = 0;
-				}
-				
-				if ((local_data->pixel_pointer+k)->g < 0)
-				{
-					(local_data->pixel_pointer+k)->g = 0;
-				}
-				
-				if ((local_data->pixel_pointer+k)->b < 0)
-				{
-					(local_data->pixel_pointer+k)->b = 0;
-				}
-				
-				if ((local_data->pixel_pointer+k)->r > 255)
-				{
-					(local_data->pixel_pointer+k)->r = 255;
-				}
-				
-				if ((local_data->pixel_pointer+k)->g > 255)
-				{
-					(local_data->pixel_pointer+k)->g = 255;
-				}
-				
-				if ((local_data->pixel_pointer+k)->b > 255)
-				{
-					(local_data->pixel_pointer+k)->b = 255;
-				}
+				(local_data->pixel_pointer+pixelCounter)->r = 0;
+				(local_data->pixel_pointer+pixelCounter)->g = 0;
+				(local_data->pixel_pointer+pixelCounter)->b = 0;
 			}
 			
-			k++;
+			pixelCounter++;
 		}
-	
+		
 /* ---- prevent freeze of window with high iterations ---- */
-	
-	gtk_main_iteration();
+		
+		gtk_main_iteration();
 	}
+	
+/* ---- free the colormapping ---- */
+	
+	for (i = 0; i < iterations; i++)
+	{
+		g_free(colorMapEasy[i]);
+	}
+	g_free(colorMapEasy);
 	
 #if DEBUG
 	g_printf(BOLD"Done generating set\t Writing file\t"RESET);
@@ -632,20 +807,42 @@ static void calculation (GtkWidget *widget, gpointer data)
 	{
 		perror(BOLD"ERROR: fopen: Can't open output file\n"RESET);
 		g_free(local_data->pixel_pointer);
+		g_free(local_data);
+		g_free(message);
 		exit(EXIT_FAILURE);
 	}
 	
-	fprintf(pFout, "P3\n");
-	fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
-	fprintf(pFout, "255\n");
-	fprintf(pFout, "#OffsetX: %.15lf, Offset: %.15lf, Zoom: %.15lf\n", offset_x, offset_y, zoom);
+	rv = fprintf(pFout, "P3\n");
+	if (rv < 3)
+	{
+		g_print(BOLD"WARNING: writing file: Can't write 1st line"RESET);
+	}
+	rv = fprintf(pFout, "%u %u\n", WIDTH, HEIGHT);
+	if (rv < 4)
+	{
+		g_print(BOLD"WARNING: writing file: Can't write 2nd line"RESET);
+	}
+	rv = fprintf(pFout, "255\n");
+	if (rv < 4)
+	{
+		g_print(BOLD"WARNING: writing file: Can't write 3rd line"RESET);
+	}
+	rv = fprintf(pFout, "#OffsetX: %.15lf, Offset: %.15lf, Zoom: %.15lf\n", offset_x, offset_y, zoom);
+	if (rv < 77)
+	{
+		g_print(BOLD"WARNING: writing file: Can't write 4th line"RESET);
+	}
 	
 	for (i = 0; i < height*width; i++)
 	{
-		fprintf(pFout, "%u %u %u\n",
+		rv = fprintf(pFout, "%u %u %u\n",
 								(local_data->pixel_pointer+i)->r,
 								(local_data->pixel_pointer+i)->g,
 								(local_data->pixel_pointer+i)->b);
+		if (rv < 6)
+		{
+			g_print(BOLD"WARNING: writing file: Can't write %dth line"RESET, i+5);
+		}
 	}
 	
 	error = fclose(pFout);
@@ -654,6 +851,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 		perror(BOLD"ERROR: fclose: Can't close file\n"RESET);
 		g_free(local_data->pixel_pointer);
 		g_free(local_data);
+		g_free(message);
 		exit(EXIT_FAILURE);
 	}
 	
@@ -675,6 +873,8 @@ static void calculation (GtkWidget *widget, gpointer data)
 	
 	write_statusbar((gpointer)local_data, message);
 	on_stop_clicked((gpointer)local_data);
+	
+	g_free(message);
 }
 
 /*------------------------------------------------------------------*/
@@ -846,10 +1046,18 @@ static void activate (GtkApplication *app, gpointer data)
 	box_3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 	gtk_grid_attach(GTK_GRID(grid_settings), box_3, 0, 14, 4, 2);
 	
-	local_data->color_radio[0] = gtk_radio_button_new_with_label(NULL, "Default");
-	local_data->color_radio[1] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "Red");
-	local_data->color_radio[2] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "Green");
-	local_data->color_radio[3] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "Blue");
+	local_data->color_radio[0] = gtk_radio_button_new_with_label(NULL, "SIN: Cyan");
+	local_data->color_radio[1] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "SIN: Red");
+	local_data->color_radio[2] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "SIN: Green");
+	local_data->color_radio[3] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "SIN: Blue");
+	local_data->color_radio[4] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "PT1: Cyan");
+	local_data->color_radio[5] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "PT1: Red");
+	local_data->color_radio[6] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "PT1: Green");
+	local_data->color_radio[7] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "PT1: Blue");
+	local_data->color_radio[8] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "LINEAR: Cyan");
+	local_data->color_radio[9] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "LINEAR: Red");
+	local_data->color_radio[10] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "LINEAR: Green");
+	local_data->color_radio[11] = gtk_radio_button_new_with_label_from_widget(GTK_RADIO_BUTTON(local_data->color_radio[0]), "LINEAR: Blue");
 	
 	for (i = 0; i < BUTTON_AMMOUNT; i++)
 	{
@@ -1023,6 +1231,7 @@ int main (int argc, char *argv[])
 	
 	local_data->calculation = 0;
 	local_data->colormapping = 0;
+	local_data->offsetRGB = 30;
 	
 /* ---- create a threaded application ---- */
 	

@@ -9,6 +9,8 @@
  *          Rev.: 03, 10.05.2017 - Changed the check_number function
  *          Rev.: 04, 01.06.2017 - Added write_statusbar function
  *                                 to write given string into statusbar
+ *          Rev.: 05, 14.06.2017 - Added dialogs some days ago and changed
+ *                                 help_dialog output
  *
  * \information
  *
@@ -89,7 +91,8 @@ void about_dialog (GSimpleAction *simple, GVariant *parameter, gpointer data)
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
-	const gchar *authors[] = {"Sebastian Dichler<el16b032@technikum-wien.at>", NULL};
+	const gchar *authors[] = {"Sebastian Dichler<el16b032@technikum-wien.at>",
+								"Helmut Resch<el16b005@technikum-wien.at>", NULL};
 	const gchar *documenters[] = {"Sebastian Dichler<el16b032@technikum-wien.at>", NULL};
 
 	about_dialog = gtk_about_dialog_new();
@@ -127,7 +130,8 @@ void help_dialog (GSimpleAction *action, GVariant *parameter, gpointer data)
 					"Use GENERATE to calculate a new picture\n"
 					"Use SAVE PICTURE to save the picture to the program folder\n"
 					"Use CLEAR to reset the user input\n"
-					"Use SETTINGS to access to the About Dialog, Help Dialog or to Quit the Application\n");
+					"Use SETTINGS to access to the About Dialog, Help Dialog or to Quit the Application\n\n"
+					"Version: "VERSION", Added a new colormapping");
 	gtk_widget_set_name(dialog, "style_dialog");
 	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 	gtk_widget_show (dialog);

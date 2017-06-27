@@ -11,6 +11,8 @@
  *                                 menu
  *          Rev.: 05, 09.06.2017 - Added new library and removed a define and
  *                                 new Widgets for colormapping and spinner
+ *          Rev.: 06, 27.06.2017 - Added some new radio buttons and offsetRGB to
+ *                                 struct
  *
  * \information
  *
@@ -72,10 +74,10 @@
 #define WIDTH 1024
 
 #define STRINGLENGTH 500
-#define BUTTON_AMMOUNT 4
+#define BUTTON_AMMOUNT 12
 //#define N_THREADS 1 /* for threaded calculation (for later version) */
 
-#define VERSION "1.2"
+#define VERSION "2.0"
 
 struct picture_pointer
 {
@@ -105,6 +107,7 @@ struct my_widgets
 	guint id; /* requested for statusbar */
 	gint calculation; /* value if calculation was present or not */
 	gint colormapping; /* value for colormapping */
+	gdouble offsetRGB; /* color offset for colormapping */
 	struct picture_pointer *pixel_pointer; /* pixel pointer */
 };
 
