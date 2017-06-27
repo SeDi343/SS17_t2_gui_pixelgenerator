@@ -749,9 +749,12 @@ static void calculation (GtkWidget *widget, gpointer data)
 #if DEBUG
 	g_printf(BOLD"Calculating Mandelbrot Set\t"RESET);
 #endif
+	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
 	
 	for (xIterate = 0; xIterate < height; xIterate++)
 	{
+		gtk_main_iteration();
+		
 		for (yIterate = 0; yIterate < width; yIterate++)
 		{
 			//realPart = (yIterate - width  / 2.0) * zoom + offset_x;
@@ -786,10 +789,6 @@ static void calculation (GtkWidget *widget, gpointer data)
 			
 			pixelCounter++;
 		}
-		
-/* ---- prevent freeze of window with high iterations ---- */
-		
-		gtk_main_iteration();
 	}
 	
 /* ---- free the colormapping ---- */
@@ -889,7 +888,7 @@ static void precalculation (GtkWidget *widget, gpointer data)
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
 	on_play_clicked((gpointer)local_data);
-	write_statusbar((gpointer)local_data, "Generating Mandelbrot set ...");
+	write_statusbar((gpointer)local_data, "Generating Mandelbrot colormapping ...");
 	
 	gtk_main_iteration();
 	calculation(NULL, (gpointer)local_data);
