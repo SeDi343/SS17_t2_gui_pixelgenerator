@@ -729,6 +729,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 				g_printf("WARNING: No information from radio buttons\n");
 			break;
 		}
+		
+/* ---- prevent freeze of window with high iterations ---- */
+		
+		gtk_main_iteration();
 	}
 	
 #if DEBUG
