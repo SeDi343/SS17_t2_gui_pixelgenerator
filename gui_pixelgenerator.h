@@ -98,7 +98,6 @@ struct my_widgets
 	GtkWidget *input_zoom; /* input zoomfactor */
 	GtkWidget *box_1; /* mandelbrot picture */
 	GtkWidget *input_filename; /* saveimage filename */
-	GtkWidget *save_dialog; /* Dialog for saveimage */
 	GtkWidget *save_label; /* Label for saveimage */
 	GtkWidget *statusbar; /* Statusbar for stauts */
 	GtkWidget *headerbar; /* headerbar */

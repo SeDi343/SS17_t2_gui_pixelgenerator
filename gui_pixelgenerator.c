@@ -57,14 +57,8 @@
  *                                 method
  *          Rev.: 33, 28.06.2017 - Playing with the gtk_main_iteration function
  *                                 for faster calculation without freezing program
- *
- * \information changed algorithm, main structure from
- *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
- *
- *              will edit the mandelbrot algorithm and color mapping method
- *              with Helmut -> add him to the authors, documenters
- *
- *              Use GtkFileChooserDialog instead of complex save function
+ *          Rev.: 34, 28.06.2017 - Added FileChooserDialog and removed old
+ *                                 savefile dialog
  *
  */
 
@@ -147,16 +141,13 @@ static void construct_menu (GtkApplication *app, GtkWidget *box, gpointer data)
 }
 
 /*------------------------------------------------------------------*/
-/* D I A L O G   S A V E   R E S P O N S E   F U N C T I O N        */
+/* S A V E   P I C T U R E   F U N C T I O N                        */
 /*------------------------------------------------------------------*/
-static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer data)
+static void save_picture (char *filename, gpointer data)
 {
-/* ---- local variables ---- */
-	
 	gdouble height = HEIGHT;
 	gdouble width = WIDTH;
 	gchar *local_filename;
-	gchar *systemcall;
 	gint rv;
 	
 	gint i;
@@ -168,9 +159,9 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 	
 /* ---- response save with calculation ---- */
 	
-	if (response_id == GTK_RESPONSE_OK && local_data->calculation == 1)
+	if (local_data->calculation == 1)
 	{
-		local_filename = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_filename));
+		local_filename = filename;
 		
 /* ---- check filname extension ---- */
 		
@@ -233,18 +224,20 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 			exit(EXIT_FAILURE);
 		}
 		
-		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
-		
 /* ---- write into statusbar ---- */
 		
 		write_statusbar((gpointer)local_data, "Saved Image");
+		
 	}
 	
 /* ---- response save without calculation ---- */
 	
-	else if (response_id == GTK_RESPONSE_OK && local_data->calculation == 0)
+	else if (local_data->calculation == 0)
 	{
-		local_filename = (gchar *)gtk_entry_get_text(GTK_ENTRY(local_data->input_filename));
+		FILE *pFin = NULL;
+		local_filename = filename;
+		long fsize;
+		char *filebuffer;
 		
 /* ---- check filname extension ---- */
 		
@@ -254,122 +247,124 @@ static void dialog_save_response (GtkDialog *dialog, gint response_id, gpointer 
 			sprintf(local_filename, "%s.ppm", local_filename);
 		}
 		
-/* ---- create a systemcall for cp command ---- */
+/* ---- open the input file ---- */
 		
-		systemcall = g_malloc(sizeof(gchar) * (strlen(local_filename) + 13)); // no idea why 1 more (\r?)
-		
-		error = g_sprintf(systemcall, "cp .out.ppm %s", local_filename);
-		if (error < 0)
+		pFin = fopen(".out.ppm", "rb");
+		if (pFin == NULL)
 		{
-			perror(BOLD"ERROR: sprintf: Can't create string"RESET);
-			g_free(systemcall);
+			perror(BOLD"ERROR: fopen: Can't open input file"RESET);
 			g_free(local_data);
 			exit(EXIT_FAILURE);
 		}
 		
-		error = system(systemcall);
-		if (error < 0)
+/* ---- check input file size ---- */
+		
+		fseek(pFin, 0, SEEK_END);
+		fsize = ftell(pFin);
+		fseek(pFin, 0, SEEK_SET);
+		
+/* ---- allocate memory for filebuffer ---- */
+		
+		filebuffer = g_malloc(fsize + 1);
+		if (filebuffer == NULL)
 		{
-			perror(BOLD"ERROR: system: Can't save image with cp command"RESET);
-			g_free(systemcall);
+			perror(BOLD"ERROR: g_malloc: Can't allocate memory for filebuffer"RESET);
 			g_free(local_data);
 			exit(EXIT_FAILURE);
 		}
 		
-		g_free(systemcall);
+/* ---- read file into buffer ---- */
 		
-		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
+		fread(filebuffer, fsize, 1, pFin);
+		
+/* ---- set last char of buffer to 0 as nothing follows (EOF) ---- */
+		
+		filebuffer[fsize] = 0;
+		
+/* ---- close input file ---- */
+		
+		error = fclose(pFin);
+		if (error == EOF)
+		{
+			perror(BOLD"ERROR: fclose: Can't close input file"RESET);
+			g_free(local_data);
+			g_free(filebuffer);
+			exit(EXIT_FAILURE);
+		}
+		
+/* ---- open the output file ---- */
+		
+		pFout = fopen(local_filename, "wb");
+		if (pFout == NULL)
+		{
+			perror(BOLD"ERROR: fopen: Can't open output file"RESET);
+			g_free(local_data->pixel_pointer);
+			g_free(local_data);
+			g_free(filebuffer);
+			exit(EXIT_FAILURE);
+		}
+		
+/* ---- write buffer into output ---- */
+		
+		fwrite(filebuffer, fsize, 1, pFout);
+		
+/* ---- close output file ---- */
+		
+		error = fclose(pFout);
+		if (error == EOF)
+		{
+			perror(BOLD"ERROR: fclose: Can't close output file"RESET);
+			g_free(local_data);
+			g_free(filebuffer);
+			exit(EXIT_FAILURE);
+		}
 		
 /* ---- write into statusbar ---- */
 		
 		write_statusbar((gpointer)local_data, "Saved Image");
-	}
-	
-	else if (response_id == GTK_RESPONSE_CANCEL)
-	{
-		gtk_widget_destroy(GTK_WIDGET(local_data->save_dialog));
 		
-/* ---- write into statusbar ---- */
-		
-		write_statusbar((gpointer)local_data, "Quit saving Image");
+		g_free(filebuffer);
 	}
 }
 
 /*------------------------------------------------------------------*/
-/* D I A L O G   S A V E   E N T R Y   F U N C T I O N              */
-/*------------------------------------------------------------------*/
-static void dialog_save_entry (GtkWidget *widget, gpointer data)
-{
-	struct my_widgets *local_data = (struct my_widgets *)data;
-	
-	dialog_save_response(GTK_DIALOG(local_data->save_dialog), GTK_RESPONSE_OK, local_data);
-}
-
-/*------------------------------------------------------------------*/
-/* D I A L O G   S A V E   I M A G E   F U N C T I O N              */
+/* S A V E   D I A L O G   F U N C T I O N                          */
 /*------------------------------------------------------------------*/
 static void dialog_savebutton (GtkWidget *widget, gpointer data)
 {
-	GtkWidget *grid;
-	GtkWidget *label;
-	GtkWidget *save_button;
-	GtkWidget *cancel_button;
-	GtkStyleContext *context;
-	GtkWidget *content_area;
+	GtkWidget *dialog;
+	GtkFileChooser *chooser;
+	GtkFileChooserAction action = GTK_FILE_CHOOSER_ACTION_SAVE;
+	gint res;
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
-/* ---- create a new dialog ---- */
+	dialog = gtk_file_chooser_dialog_new("Save File",
+											GTK_WINDOW(local_data->window),
+											action,
+											_("_Cancel"),
+											GTK_RESPONSE_CANCEL,
+											_("_Save"),
+											GTK_RESPONSE_ACCEPT,
+											NULL);
+	chooser = GTK_FILE_CHOOSER(dialog);
 	
-	local_data->save_dialog = gtk_dialog_new_with_buttons("Save as ...",
-								GTK_WINDOW (local_data->window),
-								GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT |
-								GTK_DIALOG_USE_HEADER_BAR,
-								GTK_BUTTONS_NONE,
-								NULL);
+	gtk_file_chooser_set_do_overwrite_confirmation(chooser, TRUE);
 	
-	save_button = gtk_dialog_add_button(GTK_DIALOG(local_data->save_dialog), _ ("_Save"), GTK_RESPONSE_OK);
-	cancel_button = gtk_dialog_add_button(GTK_DIALOG(local_data->save_dialog), _ ("_Cancel"), GTK_RESPONSE_CANCEL);
+	gtk_file_chooser_set_current_name(chooser, _("picture.ppm"));
 	
-/* ---- change buttons style ---- */
+	res = gtk_dialog_run(GTK_DIALOG(dialog));
+	if (res == GTK_RESPONSE_ACCEPT)
+	{
+		char *filename;
+		
+		filename = gtk_file_chooser_get_filename(chooser);
+		
+		save_picture(filename, (gpointer)local_data);
+		g_free(filename);
+	}
 	
-	context = gtk_widget_get_style_context(save_button);
-	gtk_style_context_add_class(context, "text-button");
-/*	gtk_style_context_add_class(context, "suggested-action");*/
-	
-	context = gtk_widget_get_style_context(cancel_button);
-	gtk_style_context_add_class(context, "text-button");
-/*	gtk_style_context_add_class(context, "destructive-action");*/
-	
-/* ---- change dialog window size ---- */
-	
-	gtk_window_set_default_size(GTK_WINDOW(local_data->save_dialog), 400, 150);
-	
-/* ---- costom dialog ---- */
-	
-	content_area = gtk_dialog_get_content_area(GTK_DIALOG(local_data->save_dialog));
-	
-	grid = gtk_grid_new();
-	gtk_grid_set_row_homogeneous(GTK_GRID(grid), TRUE);
-	gtk_grid_set_column_homogeneous(GTK_GRID(grid), TRUE);
-	gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
-	gtk_container_add(GTK_CONTAINER(content_area), grid);
-	gtk_container_set_border_width(GTK_CONTAINER(content_area), 10);
-	
-	label = gtk_label_new("Enter filename and click Save ...");
-	gtk_widget_set_name(label, "style_dialog");
-	gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
-	
-	local_data->input_filename = gtk_entry_new();
-	gtk_grid_attach(GTK_GRID(grid), local_data->input_filename, 0, 1, 1, 1);
-	gtk_entry_set_text(GTK_ENTRY(local_data->input_filename), "picture.ppm");
-	
-/* ---- show dialog message ---- */
-	
-	gtk_widget_show_all(local_data->save_dialog);
-	
-	g_signal_connect(GTK_DIALOG(local_data->save_dialog), "response", G_CALLBACK(dialog_save_response), (gpointer)local_data);
-	g_signal_connect(GTK_ENTRY(local_data->input_filename), "activate", G_CALLBACK(dialog_save_entry), (gpointer)local_data);
+	gtk_widget_destroy(dialog);
 }
 
 /*------------------------------------------------------------------*/
@@ -561,6 +556,12 @@ static void calculation (GtkWidget *widget, gpointer data)
 /* ---- allocate memory for statusbar output ---- */
 	
 	message = g_malloc(sizeof(gchar) * 5000);
+	if (message == NULL)
+	{
+		perror(BOLD"ERROR: g_malloc: Can't allocate memory for statusbar"RESET);
+		g_free(local_data);
+		exit(EXIT_FAILURE);
+	}
 	
 /* ---- fill variables from buffer ---- */
 	
