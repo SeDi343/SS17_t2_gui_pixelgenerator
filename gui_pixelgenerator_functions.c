@@ -132,7 +132,7 @@ void help_dialog (GSimpleAction *action, GVariant *parameter, gpointer data)
 					"Use SAVE PICTURE to save the picture to the program folder\n"
 					"Use CLEAR to reset the user input\n"
 					"Use SETTINGS to access to the About Dialog, Help Dialog or to Quit the Application\n\n"
-					"Version: "VERSION", Added a new colormapping");
+					"Version: "VERSION", Added a new colormapping and save function");
 	gtk_widget_set_name(dialog, "style_dialog");
 	g_signal_connect(dialog, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 	gtk_widget_show (dialog);
