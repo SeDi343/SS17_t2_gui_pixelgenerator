@@ -227,7 +227,6 @@ static void save_picture (char *filename, gpointer data)
 /* ---- write into statusbar ---- */
 		
 		write_statusbar((gpointer)local_data, "Saved Image");
-		
 	}
 	
 /* ---- response save without calculation ---- */
@@ -339,7 +338,7 @@ static void dialog_savebutton (GtkWidget *widget, gpointer data)
 	
 	struct my_widgets *local_data = (struct my_widgets *)data;
 	
-	dialog = gtk_file_chooser_dialog_new("Save File",
+	dialog = gtk_file_chooser_dialog_new("Save As ...",
 											GTK_WINDOW(local_data->window),
 											action,
 											_("_Cancel"),
@@ -1146,7 +1145,7 @@ static void activate (GtkApplication *app, gpointer data)
 	
 /* ---- put save button to the right side of the header bar ---- */
 	
-	save_button = gtk_button_new_with_mnemonic("_Save Picture");
+	save_button = gtk_button_new_with_mnemonic("_Save");
 	
 	context = gtk_widget_get_style_context(save_button);
 	gtk_style_context_add_class(context, "text-button");
