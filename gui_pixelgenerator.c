@@ -577,7 +577,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 		g_free(local_data);
 		exit(EXIT_FAILURE);
 	}
-	for (int i = 0; i < iterations; i++)
+	for (i = 0; i < iterations; i++)
 	{
 		colorMapEasy[i] = (unsigned char *)calloc(3, sizeof(unsigned char));
 		if(colorMapEasy[i] == NULL)
@@ -732,7 +732,10 @@ static void calculation (GtkWidget *widget, gpointer data)
 		
 /* ---- prevent freeze of window with high iterations ---- */
 		
-		gtk_main_iteration();
+		if (i % 2 == 0)
+		{
+			gtk_main_iteration();
+		}
 	}
 	
 #if DEBUG
