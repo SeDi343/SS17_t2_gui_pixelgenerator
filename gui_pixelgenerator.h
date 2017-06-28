@@ -77,7 +77,7 @@
 #define BUTTON_AMMOUNT 12
 //#define N_THREADS 1 /* for threaded calculation (for later version) */
 
-#define VERSION "2.0"
+#define VERSION "2.1"
 
 struct picture_pointer
 {
