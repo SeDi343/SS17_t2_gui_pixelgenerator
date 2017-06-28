@@ -55,6 +55,8 @@
  *          Rev.: 31, 14.06.2017 - Added several returnvalue checks
  *          Rev.: 32, 27.06.2017 - Changed full calculate function to Helmuts
  *                                 method
+ *          Rev.: 33, 28.06.2017 - Playing with the gtk_main_iteration function
+ *                                 for faster calculation without freezing program
  *
  * \information changed algorithm, main structure from
  *              http://stackoverflow.com/questions/16124127/improvement-to-my-mandelbrot-set-code
@@ -732,7 +734,7 @@ static void calculation (GtkWidget *widget, gpointer data)
 		
 /* ---- prevent freeze of window with high iterations ---- */
 		
-		if (i % 2 == 0)
+		if (i % (int)(iterations / 10) == 0)
 		{
 			gtk_main_iteration();
 		}
